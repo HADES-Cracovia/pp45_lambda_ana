@@ -34,11 +34,10 @@
 static const Float_t NULL_DATA = -10000.;
 static const Float_t MASS_OK = 10000.;
 static const Float_t ERR_NOT_IN_VERTEX = -10001.;
-static const Float_t ERR_SAME_TRACKS = -10002.;
+static const Float_t ERR_MASS_OUT_OF_RANGE = -10002.;
 static const Float_t ERR_NO_LAMBDA = -10003.;
 static const Float_t ERR_VERTEX_Z_MISSMATCH = -10004.;
-static const Float_t ERR_MASS_OUT_OF_RANGE = -10005.;
-static const Float_t ERR_SIM_VERTEX_MISSMATCH = -10006.;
+static const Float_t ERR_SIM_VERTEX_MISSMATCH = -10005.;
 
 //#define SHOWREJECTED
 
@@ -121,6 +120,8 @@ struct AnaDataSet
     Int_t fPVtype;
 
     KTrack tr_lambda_cms;
+    KTrack tr_lambda_a;
+    KTrack tr_lambda_b;
 
     KVertex vx_primary;
     KVertex vx_lambda;
@@ -247,6 +248,8 @@ protected:
     int par_VertDistB;		// CLI
 
     KTrack track_lambda_cms;
+    KTrack track_lambda_a;
+    KTrack track_lambda_b;
     KVertex vertex_primary;
     KVertex vertex_lambda;
     KVector vector_pol;

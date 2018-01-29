@@ -103,19 +103,15 @@ bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
 
     g_ads.fEventLCounter = 0;
 
-    float mass_diff = MASS_OK;
-
     g_ads.fMultA = 0;
     g_ads.fMultB = 0;
 
     g_ads.fIsFwDetData = 0;
 
-    size_t combo_cnt = 0;
-
     std::vector<AnaDataSet> ads_arr;
     ads_arr.reserve(10000);
 
-    size_t combo_pos = 0;
+    size_t combo_cnt = 0;
     std::vector<float> mtd_list;
 
     for(int i = 0; i < /*fMultA*/g_ads.fHadesTracksNum; ++i)
@@ -137,9 +133,6 @@ bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
             if (ads_ret.ret == ERR_MASS_OUT_OF_RANGE)
                 continue;
 
-            if (ads_ret.ret == ERR_SAME_TRACKS)
-                continue;
-
             if (ads_ret.ret == ERR_NO_LAMBDA)
                 continue;
 
@@ -149,7 +142,7 @@ bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
             mtd_list.push_back(ads_ret.fMTD);
 
             ads_arr.push_back(ads_ret);
-            ++combo_pos;
+            ++combo_cnt;
         }
 
         for(int j = 0; j < /*fMultB*/g_ads.fFwDetTracksNum; ++j)
@@ -165,9 +158,6 @@ bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 if (ads_ret.ret == ERR_MASS_OUT_OF_RANGE)
                     continue;
 
-                if (ads_ret.ret == ERR_SAME_TRACKS)
-                    continue;
-
                 if (ads_ret.ret == ERR_NO_LAMBDA)
                     continue;
 
@@ -177,7 +167,7 @@ bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 mtd_list.push_back(ads_ret.fMTD);
 
                 ads_arr.push_back(ads_ret);
-                ++combo_pos;
+                ++combo_cnt;
             }
 
             if (hades_tracks[i].pid[B_PID][KT::Charge])
@@ -191,9 +181,6 @@ bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 if (ads_ret.ret == ERR_MASS_OUT_OF_RANGE)
                     continue;
 
-                if (ads_ret.ret == ERR_SAME_TRACKS)
-                    continue;
-
                 if (ads_ret.ret == ERR_NO_LAMBDA)
                     continue;
 
@@ -203,27 +190,29 @@ bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 mtd_list.push_back(ads_ret.fMTD);
 
                 ads_arr.push_back(ads_ret);
-                ++combo_pos;
+                ++combo_cnt;
             }
         }
     }
 
     std::sort(mtd_list.begin(), mtd_list.end());
 
-    for (size_t i = 0; i < combo_pos; ++i)
+    for (size_t i = 0; i < combo_cnt; ++i)
     {
-        for (size_t j = 0; j < combo_pos; ++j)
+        for (size_t j = 0; j < combo_cnt; ++j)
         {
             if (ads_arr[i].fMTD == mtd_list[j])
                 ads_arr[i].fSortOrderMtd = j;
         }
     }
 
-    for (size_t i = 0; i < combo_pos; ++i)
+    for (size_t i = 0; i < combo_cnt; ++i)
     {
         g_ads = ads_arr[i];
 
         track_lambda_cms = ads_arr[i].tr_lambda_cms;
+        track_lambda_a = ads_arr[i].tr_lambda_a;
+        track_lambda_b = ads_arr[i].tr_lambda_b;
         vertex_primary = ads_arr[i].vx_primary;
         vertex_lambda = ads_arr[i].vx_lambda;
         vector_pol = ads_arr[i].vr_pol;
@@ -234,6 +223,8 @@ bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
         trec_lambdaF = ads_arr[i].trec_lambdaF;
 
         track_lambda_cms.fill();
+        track_lambda_a.fill();
+        track_lambda_b.fill();
         vertex_primary.fill();
         vertex_lambda.fill();
         vector_pol.fill();
@@ -249,7 +240,7 @@ bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
     return true;
 }
 
-AnaDataSet pp45_Lambda::singlePairAnalysis(HEvent * fEvent, int event_num, UInt_t pid_a, UInt_t pid_b, HCategory * pcand, int trackA_num, int trackB_num, bool quick_run)
+AnaDataSet pp45_Lambda::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*/, UInt_t pid_a, UInt_t pid_b, HCategory * pcand, int trackA_num, int trackB_num, bool quick_run)
 {
     HGeomVector beamVector; // FIXME
 //     if (analysisType == KT::Exp)
@@ -277,21 +268,9 @@ AnaDataSet pp45_Lambda::singlePairAnalysis(HEvent * fEvent, int event_num, UInt_
 
     HGeomVector dirMother, PrimVertexMother;
 
-    // Get the tracks and calculate the direction and base vectors
-    if (trackA_num == trackB_num)
-    {
-    #ifdef SHOWREJECTED
-        ads.fRejected = ERR_SAME_TRACKS;
-    #else
-        ads.ret = ERR_SAME_TRACKS;
-        return ads;
-    #endif /*SHOWREJECTED*/
-    }
-
     HParticleCandSim trackA = *(HParticleCandSim*)pcand->getObject(trackA_num);
     HParticleCandSim trackB = *(HParticleCandSim*)pcand->getObject(trackB_num);
-// trackA.print();
-// trackB.print();
+
     trackA.calc4vectorProperties(HPhysicsConstants::mass(pid_a));
     trackB.calc4vectorProperties(HPhysicsConstants::mass(pid_b));
 
@@ -331,6 +310,8 @@ AnaDataSet pp45_Lambda::singlePairAnalysis(HEvent * fEvent, int event_num, UInt_
     ads.fMomBy = trackB.Py();
     ads.fMomBz = trackB.Pz();
 
+    ads.tr_lambda_a = trackA;
+    ads.tr_lambda_b = trackB;
     ads.trec_lambda.reconstruct(trackA, trackB);
 
 //    printf("L: px=%f  py=%f  pz=%f  e=%f\n", lambda.Px(), lambda.Py(), lambda. Pz(), ads.fE);
@@ -722,7 +703,7 @@ AnaDataSet pp45_Lambda::singlePairAnalysis(HEvent * fEvent, int event_num, UInt_
     return ads;
 }
 
-AnaDataSet pp45_Lambda::singleFwDetPairAnalysis(HEvent * fEvent, Int_t event_num, UInt_t pid_a, UInt_t pid_b, HCategory * pcand, HCategory * vcand, int trackA_num, int trackB_num, bool quick_run)
+AnaDataSet pp45_Lambda::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*event_num*/, UInt_t pid_a, UInt_t pid_b, HCategory * pcand, HCategory * vcand, int trackA_num, int trackB_num, bool quick_run)
 {
     HGeomVector beamVector; // FIXME
 //     if (analysisType == KT::Exp)
@@ -752,17 +733,15 @@ AnaDataSet pp45_Lambda::singleFwDetPairAnalysis(HEvent * fEvent, Int_t event_num
 
     HParticleCandSim trackA = *(HParticleCandSim*)pcand->getObject(trackA_num);
     HFwDetCand trackB = *(HFwDetCand*)vcand->getObject(trackB_num);
-// trackA.print();
-// trackB.print();printf("p=%f\n", trackB.P());
+
     trackA.calc4vectorProperties(HPhysicsConstants::mass(pid_a));
     trackB.calc4vectorProperties(HPhysicsConstants::mass(pid_b));
-// trackB.print();printf("p=%f\n", trackB.P());
 
     float momentum_A_corr = 0;
-    float momentum_B_corr = 0;
+//     float momentum_B_corr = 0;
 
     Float_t fMomA = trackA.getMomentum();
-    Float_t fMomB = trackB.P();
+//     Float_t fMomB = trackB.P();
 
     if (flag_elosscorr and analysisType == KT::Exp)
     {
@@ -796,11 +775,7 @@ AnaDataSet pp45_Lambda::singleFwDetPairAnalysis(HEvent * fEvent, Int_t event_num
 
     ads.trec_lambda.reconstruct(trackA, trackB);
 
-//    printf("L: px=%f  py=%f  pz=%f  e=%f\n", lambda.Px(), lambda.Py(), lambda. Pz(), ads.fE);
-//    printf("beta=%f p_p=%f p_l=%f\n", beta_vec.Mag(), trackA.P(), l_lambda.P());
-//    PR(ads.fPol);
-
-    // I do not need so many data!
+    // we do not need so many data!
     if (ads.trec_lambda.M() > 1200)
     {
     #ifdef SHOWREJECTED
@@ -810,7 +785,7 @@ AnaDataSet pp45_Lambda::singleFwDetPairAnalysis(HEvent * fEvent, Int_t event_num
         return ads;
     #endif /*SHOWREJECTED*/
     }
-//PR(ads.fM);
+
     if (quick_run)
     {
         ads.ret = (LAMBDA_MASS - ads.trec_lambda.M());
@@ -818,7 +793,6 @@ AnaDataSet pp45_Lambda::singleFwDetPairAnalysis(HEvent * fEvent, Int_t event_num
     }
 
     ads.fMTD = ads.trec_lambda.getMTD();        // minimum distance between the two tracks
-//     if (quick_run) printf(" mtd: %f\n", fMinTrackDist);
 
     float GeantxVertexA    = 0;
     float GeantyVertexA    = 0;
@@ -963,10 +937,10 @@ AnaDataSet pp45_Lambda::singleFwDetPairAnalysis(HEvent * fEvent, Int_t event_num
     if ((ads.vx_lambda.Z() - ads.vx_primary.Z()) < 0)
     {
 #ifdef SHOWREJECTED
-//         ads.fRejected = ERR_VERTEX_Z_MISSMATCH;      // FIXME
+        ads.fRejected = ERR_VERTEX_Z_MISSMATCH;
 #else
-//         ads.ret = ERR_VERTEX_Z_MISSMATCH;            // FIXME and below
-//         return ads;
+        ads.ret = ERR_VERTEX_Z_MISSMATCH;            // FIXME and below
+        return ads;
 #endif /*SHOWREJECTED*/
     }
 // printf("m=%f\n", ads.trec_lambda.M());
@@ -1190,6 +1164,8 @@ void pp45_Lambda::configureTree(TTree * tree)
     trec_lambda.setTree(tree, "Lambda_");
     trec_lambdaF.setTree(tree, "LambdaF_");
     track_lambda_cms.setTree(tree, "Lambda_cms_", KTrack::bCosTheta | KTrack::bP | KTrack::bY);
+    track_lambda_a.setTree(tree, "partA_", 0x1ff);
+    track_lambda_b.setTree(tree, "partB_", 0x1ff);
     vertex_primary.setTree(tree, "PrimaryVertex", KVertex::bXYZ | KVertex::bR);
     vertex_lambda.setTree(tree, "LambdaDecay", KVertex::bXYZ | KVertex::bR);
     vector_pol.setTree(tree, "Pol");
