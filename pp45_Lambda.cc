@@ -139,6 +139,9 @@ bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
             if (ads_ret.ret <= NULL_DATA)
                 continue;
 
+            hades_tracks[i].is_used = true;
+            hades_tracks[j].is_used = true;
+
             mtd_list.push_back(ads_ret.fMTD);
 
             ads_arr.push_back(ads_ret);
@@ -164,6 +167,8 @@ bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 if (ads_ret.ret <= NULL_DATA)
                     continue;
 
+                hades_tracks[i].is_used = true;
+
                 mtd_list.push_back(ads_ret.fMTD);
 
                 ads_arr.push_back(ads_ret);
@@ -186,6 +191,8 @@ bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
 
                 if (ads_ret.ret <= NULL_DATA)
                     continue;
+
+                hades_tracks[i].is_used = true;
 
                 mtd_list.push_back(ads_ret.fMTD);
 
@@ -233,7 +240,7 @@ bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
         vector_zetai.fill();
         trec_lambda.fill();
         trec_lambdaF.fill();
-    
+
         getTree()->Fill();
     }
 
