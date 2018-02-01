@@ -29,29 +29,37 @@ set(CMAKE_INSTALL_CMAKEDIR ${DEF_CMAKE_INSTALL_CMAKEDIR} CACHE PATH "Installatio
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+find_package(HYDRA)
 find_package(HYDRA2)
 find_package(Tifini3)
 
+if (HYDRA_FOUND)
+    set(code_src ef_lambda_pp35.cc)
+endif()
+if (HYDRA2_FOUND)
+    set(code_src ef_lambda_pp45.cc)
+endif()
+
 ##### directories
-include_directories(${ROOT_INCLUDE_DIRS} ${TIFINI3_INCLUDE_DIR} ${HYDRA2_INCLUDE_DIR})
-link_directories(${ROOT_LIBRARY_DIRS} ${TIFINI3_LIBRARY_DIR} ${HYDRA2_LIBRARY_DIR})
+include_directories(${ROOT_INCLUDE_DIRS} ${TIFINI3_INCLUDE_DIR} ${HYDRA_INCLUDE_DIR} ${HYDRA2_INCLUDE_DIR})
+link_directories(${ROOT_LIBRARY_DIRS} ${TIFINI3_LIBRARY_DIR} ${HYDRA_LIBRARY_DIR} ${HYDRA2_LIBRARY_DIR})
 
 add_definitions(${ROOT_CXX_FLAGS})
 
 ##### make targets
 
 ROOT_EXECUTABLE(tifini_event_filter_exp
-    event_filter_exp.cc ef_lambda_pp45.cc
+    event_filter_exp.cc ${code_src}
     LIBRARIES
-        ${HYDRA2_LIBRARIES}
+        ${HYDRA_LIBRARIES} ${HYDRA2_LIBRARIES}
         Tifini TifiniTools TifiniExtras
         ${ROOT_LIBRARIES}
     )
 
 ROOT_EXECUTABLE(tifini_event_filter_sim
-    event_filter_sim.cc ef_lambda_pp45.cc
+    event_filter_sim.cc ${code_src}
     LIBRARIES
-        ${HYDRA2_LIBRARIES}
+        ${HYDRA_LIBRARIES} ${HYDRA2_LIBRARIES}
         Tifini TifiniTools TifiniExtras
         ${PARTICLEEVENT_LIBRARIES} ${ROOT_LIBRARIES}
     )
