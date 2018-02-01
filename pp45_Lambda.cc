@@ -562,7 +562,7 @@ AnaDataSet pp45_Lambda::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*
     }
     // lambda boost, m from PDG
     {
-        TLorentzVector lpc;
+        TLorentzVector lpc(0, 0, 1, 0);
         lpc.SetRho(lambdaAB.P());
         lpc.SetTheta(lambdaAB.Theta());
         lpc.SetPhi(lambdaAB.Phi());
