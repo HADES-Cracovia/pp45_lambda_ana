@@ -946,11 +946,11 @@ AnaDataSet pp45_Lambda::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*eve
 #ifdef SHOWREJECTED
         ads.fRejected = ERR_VERTEX_Z_MISSMATCH;
 #else
-        ads.ret = ERR_VERTEX_Z_MISSMATCH;            // FIXME and below
-        return ads;
+//         ads.ret = ERR_VERTEX_Z_MISSMATCH;            // FIXME and below
+//         return ads;
 #endif /*SHOWREJECTED*/
     }
-// printf("m=%f\n", ads.trec_lambda.M());
+
     ads.fFitVertexX = (float)vvectors.second.getX();
     ads.fFitVertexY = (float)vvectors.second.getY();
     ads.fFitVertexZ = (float)vvectors.second.getZ();
