@@ -275,8 +275,11 @@ AnaDataSet pp45_Lambda::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*
 
     HGeomVector dirMother, PrimVertexMother;
 
-    HParticleCandSim trackA = *(HParticleCandSim*)pcand->getObject(trackA_num);
-    HParticleCandSim trackB = *(HParticleCandSim*)pcand->getObject(trackB_num);
+    TObject * o_a = pcand->getObject(trackA_num);
+    TObject * o_b = pcand->getObject(trackB_num);
+
+    HParticleCand trackA = *(HParticleCand*)o_a;
+    HParticleCand trackB = *(HParticleCand*)o_b;
 
     trackA.calc4vectorProperties(HPhysicsConstants::mass(pid_a));
     trackB.calc4vectorProperties(HPhysicsConstants::mass(pid_b));
@@ -353,8 +356,14 @@ AnaDataSet pp45_Lambda::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*
     float GeantzVertexB    = 0;
 
     // extra checks for the simulation analysis
-    if (analysisType == KT::Sim)
+    HParticleCandSim * tcs_a = dynamic_cast<HParticleCandSim*>(o_a);
+    HParticleCandSim * tcs_b = dynamic_cast<HParticleCandSim*>(o_b);
+
+    if (analysisType == KT::Sim && tcs_a && tcs_b)
     {
+        HParticleCandSim trackA = *tcs_a;
+        HParticleCandSim trackB = *tcs_b;
+
         TLorentzVector geaA; geaA.SetXYZM(trackA.getGeantxMom(), trackA.getGeantyMom(), trackA.getGeantzMom(), HPhysicsConstants::mass(pid_a));
         TLorentzVector geaB; geaB.SetXYZM(trackB.getGeantxMom(), trackB.getGeantyMom(), trackB.getGeantzMom(), HPhysicsConstants::mass(pid_b));
         TLorentzVector geaAB = geaA + geaB;
