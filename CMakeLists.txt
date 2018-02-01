@@ -35,6 +35,7 @@ find_package(Tifini3)
 
 if (HYDRA_FOUND)
     set(code_src ef_lambda_pp35.cc)
+    set(extra_libs TifiniH1Comp)
 endif()
 if (HYDRA2_FOUND)
     set(code_src ef_lambda_pp45.cc)
@@ -52,7 +53,7 @@ ROOT_EXECUTABLE(tifini_event_filter_exp
     event_filter_exp.cc ${code_src}
     LIBRARIES
         ${HYDRA_LIBRARIES} ${HYDRA2_LIBRARIES}
-        Tifini TifiniTools TifiniExtras
+        Tifini TifiniTools TifiniExtras ${extra_libs}
         ${ROOT_LIBRARIES}
     )
 
@@ -60,7 +61,7 @@ ROOT_EXECUTABLE(tifini_event_filter_sim
     event_filter_sim.cc ${code_src}
     LIBRARIES
         ${HYDRA_LIBRARIES} ${HYDRA2_LIBRARIES}
-        Tifini TifiniTools TifiniExtras
+        Tifini TifiniTools TifiniExtras ${extra_libs}
         ${PARTICLEEVENT_LIBRARIES} ${ROOT_LIBRARIES}
     )
 
