@@ -36,14 +36,13 @@
 //int fRejected;
 #endif /*SHOWREJECTED*/
 
-static const float E_kin_beam       = 4500.0;
+static const float E_kin_beam       = 3500.0;
 static const float E_kin_target     = 0.0;
 static const float E_total_beam     = E_kin_beam + HPhysicsConstants::mass(14);
 static const float E_total_target   = E_kin_target + HPhysicsConstants::mass(14);
 static const float pz_beam          = sqrt(E_total_beam*E_total_beam-HPhysicsConstants::mass(14)*HPhysicsConstants::mass(14));
 
 static const float LAMBDA_MASS = 1115.9;
-static const float XI_MASS = 1115.9;
 
 static const float D2R = TMath::DegToRad();
 static const float R2D = TMath::RadToDeg();
@@ -221,8 +220,11 @@ AnaDataSet pp35_Lambda::singlePairAnalysis(HEvent * fEvent, int /*event_num*/, U
 
     HGeomVector dirMother, PrimVertexMother;
 
-    HParticleCandSim trackA = *(HParticleCandSim*)pcand->getObject(trackA_num);
-    HParticleCandSim trackB = *(HParticleCandSim*)pcand->getObject(trackB_num);
+    TObject * o_a = pcand->getObject(trackA_num);
+    TObject * o_b = pcand->getObject(trackB_num);
+
+    HParticleCand trackA = *(HPidTrackCand*)o_a;
+    HParticleCand trackB = *(HPidTrackCand*)o_b;
 
     trackA.calc4vectorProperties(HPhysicsConstants::mass(pid_a));
     trackB.calc4vectorProperties(HPhysicsConstants::mass(pid_b));
@@ -299,8 +301,14 @@ AnaDataSet pp35_Lambda::singlePairAnalysis(HEvent * fEvent, int /*event_num*/, U
     float GeantzVertexB    = 0;
 
     // extra checks for the simulation analysis
-    if (analysisType == KT::Sim)
+    HPidTrackCandSim * tcs_a = dynamic_cast<HPidTrackCandSim*>(o_a);
+    HPidTrackCandSim * tcs_b = dynamic_cast<HPidTrackCandSim*>(o_b);
+
+    if (analysisType == KT::Sim && tcs_a && tcs_b)
     {
+        HParticleCandSim trackA = *tcs_a;
+        HParticleCandSim trackB = *tcs_b;
+
         TLorentzVector geaA; geaA.SetXYZM(trackA.getGeantxMom(), trackA.getGeantyMom(), trackA.getGeantzMom(), HPhysicsConstants::mass(pid_a));
         TLorentzVector geaB; geaB.SetXYZM(trackB.getGeantxMom(), trackB.getGeantyMom(), trackB.getGeantzMom(), HPhysicsConstants::mass(pid_b));
         TLorentzVector geaAB = geaA + geaB;
@@ -436,8 +444,8 @@ AnaDataSet pp35_Lambda::singlePairAnalysis(HEvent * fEvent, int /*event_num*/, U
 #ifdef SHOWREJECTED
         ads.fRejected = ERR_VERTEX_Z_MISSMATCH;
 #else
-        ads.ret = ERR_VERTEX_Z_MISSMATCH;
-        return ads;
+//        ads.ret = ERR_VERTEX_Z_MISSMATCH;
+//        return ads;
 #endif /*SHOWREJECTED*/
     }
 
