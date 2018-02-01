@@ -31,7 +31,7 @@
 #include "KTrackInspector.h"
 #include "KBeamCalibration.h"
 
-#include "pp45_Lambda.h"
+#include "ef_lambda_pp45.h"
 
 #ifdef SHOWREJECTED
 //int fRejected;
@@ -67,7 +67,7 @@ float calcAngleVar(HGeomVector & v1, TLorentzVector & v2)
     return _v1.Angle(_v2);
 }
 
-pp45_Lambda::pp45_Lambda(const TString& analysisName, const TString& treeName) : KAbstractAnalysis(analysisName, treeName),
+ef_lambda_pp45::ef_lambda_pp45(const TString& analysisName, const TString& treeName) : KAbstractAnalysis(analysisName, treeName),
     flag_nosecvertcuts(0), flag_elosscorr(0), flag_nosigmas(0), flag_useeventvertex(0), par_Mtd(10), par_VertDistX(45), par_VertDistA(5), par_VertDistB(15)
 {
 //     setGoodEventSelector(Particle::kGoodTRIGGER |
@@ -82,7 +82,7 @@ pp45_Lambda::pp45_Lambda(const TString& analysisName, const TString& treeName) :
     eLossCorr->setDefaultPar("jan04");
 }
 
-bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, Int_t cand_size, HCategory * vcand, Int_t vect_size)
+bool ef_lambda_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, Int_t cand_size, HCategory * vcand, Int_t vect_size)
 {
 //     printf("%d  %d\n", cand_size, vect_size);
     if ( (cand_size + vect_size) < 2 )
@@ -247,7 +247,7 @@ bool pp45_Lambda::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
     return true;
 }
 
-AnaDataSet pp45_Lambda::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*/, UInt_t pid_a, UInt_t pid_b, HCategory * pcand, int trackA_num, int trackB_num, bool quick_run)
+AnaDataSet ef_lambda_pp45::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*/, UInt_t pid_a, UInt_t pid_b, HCategory * pcand, int trackA_num, int trackB_num, bool quick_run)
 {
     HGeomVector beamVector; // FIXME
 //     if (analysisType == KT::Exp)
@@ -719,7 +719,7 @@ AnaDataSet pp45_Lambda::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*
     return ads;
 }
 
-AnaDataSet pp45_Lambda::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*event_num*/, UInt_t pid_a, UInt_t pid_b, HCategory * pcand, HCategory * vcand, int trackA_num, int trackB_num, bool quick_run)
+AnaDataSet ef_lambda_pp45::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*event_num*/, UInt_t pid_a, UInt_t pid_b, HCategory * pcand, HCategory * vcand, int trackA_num, int trackB_num, bool quick_run)
 {
     HGeomVector beamVector; // FIXME
 //     if (analysisType == KT::Exp)
@@ -1175,7 +1175,7 @@ AnaDataSet pp45_Lambda::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*eve
     return ads;
 }
 
-void pp45_Lambda::configureTree(TTree * tree)
+void ef_lambda_pp45::configureTree(TTree * tree)
 {
     trec_lambda.setTree(tree, "Lambda_");
     trec_lambdaF.setTree(tree, "LambdaF_");
@@ -1276,7 +1276,7 @@ void pp45_Lambda::configureTree(TTree * tree)
     tree->Branch("fSortOrderMtd",   &g_ads.fSortOrderMtd,   "fSortOrderMtd/I");
 }
 
-void pp45_Lambda::configureGraphicalCuts(KTrackInspector & trackInsp)
+void ef_lambda_pp45::configureGraphicalCuts(KTrackInspector & trackInsp)
 {
     const TString jsieben_pNb_cuts = "/scratch/e12f/knucl/jsieben/pNb/Cuts/";
     const TString aschmah_pp35_cuts = "/scratch/e12f/schmah/GraphicalCuts/pp35/";
@@ -1309,7 +1309,7 @@ void pp45_Lambda::configureGraphicalCuts(KTrackInspector & trackInsp)
     trackInsp.configureMetaSystem(KT::cut_pim, KT::MDC);
 }
 
-void pp45_Lambda::initAnalysis(KT::Experiment exp, KT::AnalysisType analysisType)
+void ef_lambda_pp45::initAnalysis(KT::Experiment exp, KT::AnalysisType analysisType)
 {
     KAbstractAnalysis::initAnalysis(exp, analysisType);
 
@@ -1318,13 +1318,13 @@ void pp45_Lambda::initAnalysis(KT::Experiment exp, KT::AnalysisType analysisType
 //     beamCal->initBeamCorrArray(analysisType);
 }
 
-void pp45_Lambda::finalizeAnalysis()
+void ef_lambda_pp45::finalizeAnalysis()
 {
     delete beamCal;
     KAbstractAnalysis::finalizeAnalysis();
 }
 
-int pp45_Lambda::Configure(int argc, char ** argv)
+int ef_lambda_pp45::Configure(int argc, char ** argv)
 {
     int c;
     optind = 1;
@@ -1389,7 +1389,7 @@ int pp45_Lambda::Configure(int argc, char ** argv)
     return optind;
 }
 
-void pp45_Lambda::Usage() const
+void ef_lambda_pp45::Usage() const
 {
     std::cout <<
     "Analysis options: \n" <<

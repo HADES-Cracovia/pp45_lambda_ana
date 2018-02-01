@@ -212,10 +212,10 @@ struct AnaDataSet
     }
 };
 
-class pp45_Lambda : public KAbstractAnalysis
+class ef_lambda_pp45 : public KAbstractAnalysis
 {
 public:
-    pp45_Lambda(const TString & analysisName, const TString & treeName);
+    ef_lambda_pp45(const TString & analysisName, const TString & treeName);
     virtual bool analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, Int_t cand_size, HCategory * vcand, Int_t vect_size);
 
     void initAnalysis(KT::Experiment exp, KT::AnalysisType analysisType);

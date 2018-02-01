@@ -40,24 +40,24 @@ add_definitions(${ROOT_CXX_FLAGS})
 
 ##### make targets
 
-ROOT_EXECUTABLE(pp45Lambda_tifini
-    ana.cc pp45_Lambda.cc
+ROOT_EXECUTABLE(tifini_event_filter_exp
+    event_filter_exp.cc ef_lambda_pp45.cc
     LIBRARIES
         ${HYDRA2_LIBRARIES}
         Tifini TifiniTools TifiniExtras
         ${ROOT_LIBRARIES}
     )
 
-ROOT_EXECUTABLE(pp45Lambda_tifini_sim
-    ana_sim.cc pp45_Lambda.cc
+ROOT_EXECUTABLE(tifini_event_filter_sim
+    event_filter_sim.cc ef_lambda_pp45.cc
     LIBRARIES
         ${HYDRA2_LIBRARIES}
         Tifini TifiniTools TifiniExtras
         ${PARTICLEEVENT_LIBRARIES} ${ROOT_LIBRARIES}
     )
 
-set_target_properties(pp45Lambda_tifini PROPERTIES COMPILE_DEFINITIONS "EXP_CODE=1")
-set_target_properties(pp45Lambda_tifini_sim PROPERTIES COMPILE_DEFINITIONS "SIM_CODE=1")
+set_target_properties(tifini_event_filter_exp PROPERTIES COMPILE_DEFINITIONS "EXP_CODE=1")
+set_target_properties(tifini_event_filter_sim PROPERTIES COMPILE_DEFINITIONS "SIM_CODE=1")
 
 # Export the package for use from the build-tree
 # (this registers the build-tree with a global CMake-registry)
