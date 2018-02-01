@@ -212,11 +212,11 @@ struct AnaDataSet
     }
 };
 
-class pp45_Lambda : public KAbstractAnalysis
+class pp35_Lambda : public KAbstractAnalysis
 {
 public:
-    pp45_Lambda(const TString & analysisName, const TString & treeName);
-    virtual bool analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, Int_t cand_size, HCategory * vcand, Int_t vect_size);
+    pp35_Lambda(const TString & analysisName, const TString & treeName);
+    virtual bool analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, Int_t cand_size);
 
     void initAnalysis(KT::Experiment exp, KT::AnalysisType analysisType);
     void finalizeAnalysis();
@@ -229,7 +229,6 @@ protected:
     void configureGraphicalCuts(KTrackInspector & cuts);
 
     AnaDataSet singlePairAnalysis(HEvent * fEvent, Int_t event_num, UInt_t pid_a, UInt_t pid_b, HCategory * pcand, int trackA_num, int trackB_num, bool quick_run = false);
-    AnaDataSet singleFwDetPairAnalysis(HEvent * fEvent, Int_t event_num, UInt_t pid_a, UInt_t pid_b, HCategory * pcand, HCategory * vcand, int trackA_num, int trackB_num, bool quick_run = false);
 
     HEnergyLossCorrPar * eLossCorr;
     KBeamCalibration * beamCal;

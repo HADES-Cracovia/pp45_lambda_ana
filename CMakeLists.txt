@@ -40,24 +40,24 @@ add_definitions(${ROOT_CXX_FLAGS})
 
 ##### make targets
 
-ROOT_EXECUTABLE(pp45Lambda_tifini
-    ana.cc pp45_Lambda.cc
+ROOT_EXECUTABLE(pp35Lambda_tifini
+    ana.cc pp35_Lambda.cc
     LIBRARIES
+        Tifini TifiniTools TifiniExtras TifiniH1Comp
         ${HYDRA_LIBRARIES}
-        Tifini TifiniTools TifiniExtras
         ${ROOT_LIBRARIES}
     )
 
-ROOT_EXECUTABLE(pp45Lambda_tifini_sim
-    ana_sim.cc pp45_Lambda.cc
+ROOT_EXECUTABLE(pp35Lambda_tifini_sim
+    ana_sim.cc pp35_Lambda.cc
     LIBRARIES
+        Tifini TifiniTools TifiniExtras TifiniH1Comp
         ${HYDRA_LIBRARIES}
-        Tifini TifiniTools TifiniExtras
-        ${PARTICLEEVENT_LIBRARIES} ${ROOT_LIBRARIES}
+        ${ROOT_LIBRARIES}
     )
 
-set_target_properties(pp45Lambda_tifini PROPERTIES COMPILE_DEFINITIONS "EXP_CODE=1")
-set_target_properties(pp45Lambda_tifini_sim PROPERTIES COMPILE_DEFINITIONS "SIM_CODE=1")
+set_target_properties(pp35Lambda_tifini PROPERTIES COMPILE_DEFINITIONS "EXP_CODE=1")
+set_target_properties(pp35Lambda_tifini_sim PROPERTIES COMPILE_DEFINITIONS "SIM_CODE=1")
 
 # Export the package for use from the build-tree
 # (this registers the build-tree with a global CMake-registry)
@@ -81,11 +81,11 @@ export(PACKAGE ${CMAKE_PROJECT_NAME})
 #	DESTINATION ${CMAKE_INSTALL_CMAKEDIR} COMPONENT dev)
 
 # Add all targets to the build-tree export set
-#export(TARGETS pp45Lambda_tifini pp45Lambda_tifini_sim
+#export(TARGETS pp35Lambda_tifini pp35Lambda_tifini_sim
 #        FILE ${CMAKE_PROJECT_NAME}Targets.cmake)
 
 # Install the export set for use with the install-tree
-#install(TARGETS pp45Lambda_tifini pp45Lambda_tifini_sim
+#install(TARGETS pp35Lambda_tifini pp35Lambda_tifini_sim
 #        EXPORT ${CMAKE_PROJECT_NAME}Targets
 #        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #        COMPONENT shlib COMPONENT dev)
