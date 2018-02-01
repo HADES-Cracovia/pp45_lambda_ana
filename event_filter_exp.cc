@@ -4,6 +4,7 @@
 #include "Tifini3Config.h"
 
 #ifdef HYDRA1COMP
+#include "ef_lambda_pp35.h"
 #else
 #include "ef_lambda_pp45.h"
 #endif
@@ -31,7 +32,7 @@ int main(int argc, char **argv)
         /* getopt_long stores the option index here. */
         int option_index = 0;
     
-        c = getopt_long (argc, argv, "d:e:f:o:s:h", long_options, &option_index);
+        c = getopt_long (argc, argv, "h", long_options, &option_index);
     
         /* Detect the end of the options. */
         if (c == -1)
@@ -60,9 +61,9 @@ int main(int argc, char **argv)
     {
         case 0:     // lambda
 #ifdef HYDRA1COMP
+            ana = new ef_lambda_pp35("Lambda analysis for pp35", "T");
 #else
             ana = new ef_lambda_pp45("Lambda analysis for pp45", "T");
-            break;
 #endif
     }
 

@@ -81,11 +81,11 @@ export(PACKAGE ${CMAKE_PROJECT_NAME})
 #	DESTINATION ${CMAKE_INSTALL_CMAKEDIR} COMPONENT dev)
 
 # Add all targets to the build-tree export set
-#export(TARGETS pp45Lambda_tifini pp45Lambda_tifini_sim
+#export(TARGETS pp35Lambda_tifini pp35Lambda_tifini_sim
 #        FILE ${CMAKE_PROJECT_NAME}Targets.cmake)
 
 # Install the export set for use with the install-tree
-#install(TARGETS pp45Lambda_tifini pp45Lambda_tifini_sim
+#install(TARGETS pp35Lambda_tifini pp35Lambda_tifini_sim
 #        EXPORT ${CMAKE_PROJECT_NAME}Targets
 #        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #        COMPONENT shlib COMPONENT dev)
