@@ -1,0 +1,72 @@
+# - Find HYDRA instalation
+# F.Uhlig@gsi.de (fairroot.gsi.de)
+
+# Oryginal module written for ROOT, adapted for HYDRA by R.Lalik@ph.tum.de
+
+
+MESSAGE(STATUS "Looking for Hydra2...")
+
+IF (NOT HADDIR)
+    SET (INTHADDIR $ENV{HADDIR})
+ENDIF (NOT HADDIR)
+
+IF (NOT INTHADDIR)
+MESSAGE( FATAL_ERROR "HADDIR is not set. Please set HADDIR first.")
+ENDIF (NOT INTHADDIR)
+
+IF (NOT MYHADDIR)
+        SET (MYHADDIR $ENV{MYHADDIR})
+ENDIF (NOT MYHADDIR)
+
+SET(HYDRA2_PACKAGE_SEARCHPATH
+    ${INTHADDIR}/lib
+)
+
+SET(HYDRA2_DEFINITIONS "")
+
+SET(HYDRA2_INSTALLED_VERSION_TOO_OLD FALSE)
+
+SET(HYDRA2_MAIN_LIBRARY HYDRA2_MAIN_LIBRARY-NOTFOUND)
+
+FIND_LIBRARY(HYDRA2_MAIN_LIBRARY NAMES Hydra PATHS
+    ${HYDRA2_PACKAGE_SEARCHPATH}
+    NO_DEFAULT_PATH)
+    
+IF (${HYDRA2_MAIN_LIBRARY} MATCHES "HYDRA2_MAIN_LIBRARY-NOTFOUND")
+    MESSAGE( FATAL_ERROR "Hydra2 library not found. Please check your Hydra2 installation.")
+ELSE (${HYDRA2_MAIN_LIBRARY} MATCHES "HYDRA2_MAIN_LIBRARY-NOTFOUND")
+    MESSAGE(STATUS "Looking for Hydra2... - found ${INTHADDIR}")
+    MESSAGE(STATUS "   MYHADDIR = ${MYHADDIR}")
+ENDIF (${HYDRA2_MAIN_LIBRARY} MATCHES "HYDRA2_MAIN_LIBRARY-NOTFOUND")  
+
+SET(HYDRA2_FOUND TRUE)
+
+# IF (INTHADDIR)
+#	MESSAGE(STATUS "Looking for Root... - version ${ROOTVERSION} ")
+# ENDIF (INTHADDIR)
+
+
+IF (HYDRA2_FOUND)
+    SET(HYDRA2_LIBRARY_DIR ${INTHADDIR}/lib )
+    SET(HYDRA2_INCLUDE_DIR ${INTHADDIR}/include )
+
+    set(HYDRA2_LIBRARIES)
+    foreach(_cpt Alignment Dst Emc EventDisplay FwDet Hydra Kalman MdcGarfield Mdc MdcTrackD MdcTrackG MdcUtil Online Particle PionTracker QA Revt Rich Rpc Shower ShowerUtil Simulation Start Tof Tools Wall)
+        find_library(HYDRA2_${_cpt}_LIBRARY NAMES ${_cpt} lib{_cpt} HINTS ${HYDRA2_LIBRARY_DIR})
+        if(HYDRA2_${_cpt}_LIBRARY)
+            mark_as_advanced(HYDRA2_${_cpt}_LIBRARY)
+            list(APPEND HYDRA2_LIBRARIES ${HYDRA2_${_cpt}_LIBRARY})
+        endif()
+    endforeach()
+    if(HYDRA2_LIBRARIES)
+        list(REMOVE_DUPLICATES HYDRA2_LIBRARIES)
+    endif()
+
+    # Make variables changeble to the advanced user
+    MARK_AS_ADVANCED( HYDRA2_LIBRARY_DIR HYDRA2_INCLUDE_DIR HYDRA2_DEFINITIONS)
+
+    # Set HYDRA2_INCLUDES
+    SET(HYDRA2_INCLUDES ${HYDRA2_INCLUDE_DIR})
+
+    SET(LD_LIBRARY_PATH ${LD_LIBRARY_PATH} ${HYDRA2_LIBRARY_DIR})
+ENDIF (HYDRA2_FOUND)

@@ -29,12 +29,12 @@ set(CMAKE_INSTALL_CMAKEDIR ${DEF_CMAKE_INSTALL_CMAKEDIR} CACHE PATH "Installatio
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-find_package(HYDRA)
+find_package(HYDRA2)
 find_package(Tifini3)
 
 ##### directories
-include_directories(${ROOT_INCLUDE_DIRS} ${TIFINI3_INCLUDE_DIR} ${HYDRA_INCLUDE_DIR})
-link_directories(${ROOT_LIBRARY_DIRS} ${TIFINI3_LIBRARY_DIR} ${HYDRA_LIBRARY_DIR})
+include_directories(${ROOT_INCLUDE_DIRS} ${TIFINI3_INCLUDE_DIR} ${HYDRA2_INCLUDE_DIR})
+link_directories(${ROOT_LIBRARY_DIRS} ${TIFINI3_LIBRARY_DIR} ${HYDRA2_LIBRARY_DIR})
 
 add_definitions(${ROOT_CXX_FLAGS})
 
@@ -43,7 +43,7 @@ add_definitions(${ROOT_CXX_FLAGS})
 ROOT_EXECUTABLE(pp45Lambda_tifini
     ana.cc pp45_Lambda.cc
     LIBRARIES
-        ${HYDRA_LIBRARIES}
+        ${HYDRA2_LIBRARIES}
         Tifini TifiniTools TifiniExtras
         ${ROOT_LIBRARIES}
     )
@@ -51,7 +51,7 @@ ROOT_EXECUTABLE(pp45Lambda_tifini
 ROOT_EXECUTABLE(pp45Lambda_tifini_sim
     ana_sim.cc pp45_Lambda.cc
     LIBRARIES
-        ${HYDRA_LIBRARIES}
+        ${HYDRA2_LIBRARIES}
         Tifini TifiniTools TifiniExtras
         ${PARTICLEEVENT_LIBRARIES} ${ROOT_LIBRARIES}
     )
