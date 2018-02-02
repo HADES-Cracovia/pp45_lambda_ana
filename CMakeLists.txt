@@ -52,25 +52,30 @@ add_definitions(${ROOT_CXX_FLAGS})
 
 foreach(_efm ${FILTER_MODULES})
     set(FM_NAME ${_efm})
-    configure_file(event_filter.cc.in event_filter_${FM_NAME}_exp.cc)
-    ROOT_EXECUTABLE(event_filter_${FM_NAME}_exp
-        event_filter_${FM_NAME}_exp.cc ef_${FM_NAME}.cc
-        LIBRARIES
-            ${HYDRA_LIBRARIES} ${HYDRA2_LIBRARIES}
-            Tifini TifiniTools TifiniExtras ${extra_libs}
-            ${ROOT_LIBRARIES}
-        ADDITIONAL_COMPILE_FLAGS "-DEXP_CODE=1"
-        )
 
-    configure_file(event_filter.cc.in event_filter_${FM_NAME}_sim.cc)
-    ROOT_EXECUTABLE(event_filter_${FM_NAME}_sim
-        event_filter_${FM_NAME}_sim.cc ef_${FM_NAME}.cc
-        LIBRARIES
-            ${HYDRA_LIBRARIES} ${HYDRA2_LIBRARIES}
-            Tifini TifiniTools TifiniExtras ${extra_libs}
-            ${ROOT_LIBRARIES}
-        ADDITIONAL_COMPILE_FLAGS "-DSIM_CODE=1"
-        )
+    set(CODE_TYPE "EXP_CODE")
+    set(TG_NAME "event_filter_${FM_NAME}_exp")
+    configure_file(event_filter.cc.in ${TG_NAME}.cc)
+    add_executable(${TG_NAME} ${TG_NAME} ef_${FM_NAME}.cc)
+    target_link_libraries(${TG_NAME}
+        ${HYDRA_LIBRARIES} ${HYDRA2_LIBRARIES}
+        Tifini TifiniTools TifiniExtras ${extra_libs}
+        ${ROOT_LIBRARIES}
+    )
+    install(TARGETS ${TG_NAME}
+       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+    set(CODE_TYPE "SIM_CODE")
+    set(TG_NAME "event_filter_${FM_NAME}_sim")
+    configure_file(event_filter.cc.in ${TG_NAME}.cc)
+    add_executable(${TG_NAME} ${TG_NAME} ef_${FM_NAME}.cc)
+    target_link_libraries(${TG_NAME}
+        ${HYDRA_LIBRARIES} ${HYDRA2_LIBRARIES}
+        Tifini TifiniTools TifiniExtras ${extra_libs}
+        ${ROOT_LIBRARIES}
+    )
+    install(TARGETS ${TG_NAME}
+       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endforeach()
 
 

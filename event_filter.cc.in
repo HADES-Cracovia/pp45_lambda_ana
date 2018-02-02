@@ -2,6 +2,8 @@
 
 #include "ef_@FM_NAME@.h"
 
+#define @CODE_TYPE@ 1
+
 int main(int argc, char **argv)
 {
     KAbstractAnalysis * ana = new ef_@FM_NAME@("analysis", "T");
