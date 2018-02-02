@@ -39,7 +39,7 @@ if (HYDRA_FOUND)
     set(extra_libs TifiniH1Comp)
 endif()
 if (HYDRA2_FOUND)
-    set(FILTER_MODULES lambda_pp45)
+    set(FILTER_MODULES lambda_pp45 xim_pp45)
 endif()
 
 ##### directories
