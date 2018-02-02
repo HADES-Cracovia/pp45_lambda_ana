@@ -33,71 +33,50 @@ find_package(HYDRA)
 find_package(HYDRA2)
 find_package(Tifini3)
 
+set(FILTER_MODULES)
 if (HYDRA_FOUND)
-    set(code_src ef_lambda_pp35.cc)
+    set(FILTER_MODULES lambda_pp35)
     set(extra_libs TifiniH1Comp)
 endif()
 if (HYDRA2_FOUND)
-    set(code_src ef_lambda_pp45.cc)
+    set(FILTER_MODULES lambda_pp45)
 endif()
 
 ##### directories
-include_directories(${ROOT_INCLUDE_DIRS} ${TIFINI3_INCLUDE_DIR} ${HYDRA_INCLUDE_DIR} ${HYDRA2_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR} ${ROOT_INCLUDE_DIRS} ${TIFINI3_INCLUDE_DIR} ${HYDRA_INCLUDE_DIR} ${HYDRA2_INCLUDE_DIR})
 link_directories(${ROOT_LIBRARY_DIRS} ${TIFINI3_LIBRARY_DIR} ${HYDRA_LIBRARY_DIR} ${HYDRA2_LIBRARY_DIR})
 
 add_definitions(${ROOT_CXX_FLAGS})
 
 ##### make targets
 
-ROOT_EXECUTABLE(tifini_event_filter_exp
-    event_filter_exp.cc ${code_src}
-    LIBRARIES
-        ${HYDRA_LIBRARIES} ${HYDRA2_LIBRARIES}
-        Tifini TifiniTools TifiniExtras ${extra_libs}
-        ${ROOT_LIBRARIES}
-    )
+foreach(_efm ${FILTER_MODULES})
+    set(FM_NAME ${_efm})
+    configure_file(event_filter.cc.in event_filter_${FM_NAME}_exp.cc)
+    ROOT_EXECUTABLE(event_filter_${FM_NAME}_exp
+        event_filter_${FM_NAME}_exp.cc ef_${FM_NAME}.cc
+        LIBRARIES
+            ${HYDRA_LIBRARIES} ${HYDRA2_LIBRARIES}
+            Tifini TifiniTools TifiniExtras ${extra_libs}
+            ${ROOT_LIBRARIES}
+        ADDITIONAL_COMPILE_FLAGS "-DEXP_CODE=1"
+        )
 
-ROOT_EXECUTABLE(tifini_event_filter_sim
-    event_filter_sim.cc ${code_src}
-    LIBRARIES
-        ${HYDRA_LIBRARIES} ${HYDRA2_LIBRARIES}
-        Tifini TifiniTools TifiniExtras ${extra_libs}
-        ${PARTICLEEVENT_LIBRARIES} ${ROOT_LIBRARIES}
-    )
+    configure_file(event_filter.cc.in event_filter_${FM_NAME}_sim.cc)
+    ROOT_EXECUTABLE(event_filter_${FM_NAME}_sim
+        event_filter_${FM_NAME}_sim.cc ef_${FM_NAME}.cc
+        LIBRARIES
+            ${HYDRA_LIBRARIES} ${HYDRA2_LIBRARIES}
+            Tifini TifiniTools TifiniExtras ${extra_libs}
+            ${ROOT_LIBRARIES}
+        ADDITIONAL_COMPILE_FLAGS "-DSIM_CODE=1"
+        )
+endforeach()
 
-set_target_properties(tifini_event_filter_exp PROPERTIES COMPILE_DEFINITIONS "EXP_CODE=1")
-set_target_properties(tifini_event_filter_sim PROPERTIES COMPILE_DEFINITIONS "SIM_CODE=1")
 
 # Export the package for use from the build-tree
 # (this registers the build-tree with a global CMake-registry)
 export(PACKAGE ${CMAKE_PROJECT_NAME})
-
-#include(CMakePackageConfigHelpers)
-#configure_package_config_file(Config.cmake.in ${CMAKE_PROJECT_NAME}Config.cmake
-        #	INSTALL_DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
-    #	PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR CMAKE_INSTALL_BINDIR)
-
-#write_basic_package_version_file(${CMAKE_PROJECT_NAME}ConfigVersion.cmake
-#	VERSION ${PROJECT_VERSION}
-#	COMPATIBILITY SameMajorVersion)
-
-#install(FILES 
-        #	${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake
-    #	${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}ConfigVersion.cmake
-    #	DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
-
-#install(EXPORT ${CMAKE_PROJECT_NAME}Targets
-#	DESTINATION ${CMAKE_INSTALL_CMAKEDIR} COMPONENT dev)
-
-# Add all targets to the build-tree export set
-#export(TARGETS pp35Lambda_tifini pp35Lambda_tifini_sim
-#        FILE ${CMAKE_PROJECT_NAME}Targets.cmake)
-
-# Install the export set for use with the install-tree
-#install(TARGETS pp35Lambda_tifini pp35Lambda_tifini_sim
-#        EXPORT ${CMAKE_PROJECT_NAME}Targets
-#        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#        COMPONENT shlib COMPONENT dev)
 
 # messages
 MESSAGE(STATUS "<<< Configuration >>>

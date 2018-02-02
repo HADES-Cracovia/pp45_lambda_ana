@@ -1,0 +1,17 @@
+#include "KTifiniAnalysis.h"
+
+#include "ef_@FM_NAME@.h"
+
+int main(int argc, char **argv)
+{
+    KAbstractAnalysis * ana = new ef_@FM_NAME@("analysis", "T");
+#ifdef EXP_CODE
+    KTifiniAnalysis tifini(argc, argv, KT::Exp, ana);
+#endif
+#ifdef SIM_CODE
+    KTifiniAnalysis tifini(argc, argv, KT::Sim, ana);
+#endif
+    tifini.exec();
+    delete ana;
+    return 0;
+}
