@@ -78,6 +78,9 @@ ef_lambda_pp45::ef_lambda_pp45(const TString& analysisName, const TString& treeN
 
     setGoodEventSelector(0);
 
+    setPidSelectionHades(KT::p, KT::Beta | KT::Charge);
+    setPidSelectionHades(KT::pim, KT::Beta | KT::Charge);
+
     eLossCorr = new HEnergyLossCorrPar("eLossCorr", "eLossCorr", "eLossCorr");
     eLossCorr->setDefaultPar("jan04");
 }
@@ -118,13 +121,13 @@ bool ef_lambda_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcan
     {
         for(int j = 0; j < /*fMultB*/g_ads.fHadesTracksNum; ++j)
         {
-            if (!hades_tracks[i].pid[A_PID][KT::Charge])
+            if (!(hades_tracks[i].pid[A_PID][KT::Beta] and hades_tracks[i].pid[A_PID][KT::Charge]))
                 break;
 
             if (i == j)
                 continue;
 
-            if (!hades_tracks[j].pid[B_PID][KT::Charge])
+            if (!(hades_tracks[j].pid[B_PID][KT::Beta] and hades_tracks[j].pid[B_PID][KT::Charge]))
                 continue;
 
             AnaDataSet ads_ret = singlePairAnalysis(fEvent, event_num, A_PID, B_PID, pcand, i, j);
@@ -150,7 +153,7 @@ bool ef_lambda_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcan
 
         for(int j = 0; j < /*fMultB*/g_ads.fFwDetTracksNum; ++j)
         {
-            if (hades_tracks[i].pid[A_PID][KT::Charge])
+            if (hades_tracks[i].pid[A_PID][KT::Beta] and hades_tracks[i].pid[A_PID][KT::Charge])
             {
 //             if (!fwdet_tracks[j].pid[B_PID][KT::Charge])
 //                 continue;
@@ -175,7 +178,7 @@ bool ef_lambda_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcan
                 ++combo_cnt;
             }
 
-            if (hades_tracks[i].pid[B_PID][KT::Charge])
+            if (hades_tracks[i].pid[B_PID][KT::Beta] and hades_tracks[i].pid[B_PID][KT::Charge])
             {
 //             if (!fwdet_tracks[j].pid[A_PID][KT::Charge])
 //                 continue;
@@ -1027,7 +1030,7 @@ AnaDataSet ef_lambda_pp45::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*
     }
     // lambda boost, m from PDG
     {
-        TLorentzVector lpc;
+        TLorentzVector lpc(0, 0, 1, 0);
         lpc.SetRho(lambdaAB.P());
         lpc.SetTheta(lambdaAB.Theta());
         lpc.SetPhi(lambdaAB.Phi());
