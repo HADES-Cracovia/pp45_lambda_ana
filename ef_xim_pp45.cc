@@ -905,7 +905,7 @@ AnaDataSet ef_xim_pp45::singlePairAnalysisXi(HEvent* fEvent, Int_t event_num, An
     // KCutInside<Float_t> xi_mass_test(1321.71 - 100.0, 1321.71 + 100.0);
     
     //if (xi_mass_test.test(ads.trec_xim.M()))
-    if((ads.trec_xim.M() > (1321.71 - 100.0)) and (ads.trec_xim.M() < (1321.71 + 100.0)))
+    if((ads.trec_xim.M() < (1321.71 - 100.0)) or (ads.trec_xim.M() > (1321.71 + 100.0)))
     {
     #ifdef SHOWREJECTED
         ads.fRejected = ERR_MASS_OUT_OF_RANGE;
@@ -1451,7 +1451,7 @@ AnaDataSet ef_xim_pp45::singleFwDetPairAnalysisXi(HEvent* fEvent, Int_t event_nu
     // KCutInside<Double_t> xi_mass_test(1321.71 - 100.0, 1321.71 + 100.0);
     
     // if (xi_mass_test.test(ads.trec_xim.M()))
-    if((ads.trec_xim.M() > (1321.71 - 100.0)) and (ads.trec_xim.M() < (1321.71 + 100.0)))
+    if((ads.trec_xim.M() < (1321.71 - 100.0)) or (ads.trec_xim.M() > (1321.71 + 100.0)))
     {
     #ifdef SHOWREJECTED
         ads.fRejected = ERR_MASS_OUT_OF_RANGE;
