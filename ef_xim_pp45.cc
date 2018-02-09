@@ -901,18 +901,19 @@ AnaDataSet ef_xim_pp45::singlePairAnalysisXi(HEvent* fEvent, Int_t event_num, An
     // ads.tr_xim_b = trackB;
     ads.trec_xim.reconstruct(trackA, trackB);
 
-    // // I do not need so many data!
+    // I do not need so many data!
     // KCutInside<Float_t> xi_mass_test(1321.71 - 100.0, 1321.71 + 100.0);
     
-    // if (xi_mass_test.test(ads.trec_xim.M()))
-    // {
-    // #ifdef SHOWREJECTED
-    //     ads.fRejected = ERR_MASS_OUT_OF_RANGE;
-    // #else
-    //     ads.ret = ERR_MASS_OUT_OF_RANGE;
-    //     return ads;
-    // #endif /*SHOWREJECTED*/
-    // }
+    //if (xi_mass_test.test(ads.trec_xim.M()))
+    if((ads.trec_xim.M() > (1321.71 - 100.0)) and (ads.trec_xim.M() < (1321.71 + 100.0)))
+    {
+    #ifdef SHOWREJECTED
+        ads.fRejected = ERR_MASS_OUT_OF_RANGE;
+    #else
+        ads.ret = ERR_MASS_OUT_OF_RANGE;
+        return ads;
+    #endif /*SHOWREJECTED*/
+    }
 
     return ads;
 }
@@ -1447,17 +1448,18 @@ AnaDataSet ef_xim_pp45::singleFwDetPairAnalysisXi(HEvent* fEvent, Int_t event_nu
     ads.trec_xim.reconstruct(trackA, trackB);
 
     // // we do not need so many data!
-    // KCutInside<Float_t> xi_mass_test(1321.71 - 100.0, 1321.71 + 100.0);
+    // KCutInside<Double_t> xi_mass_test(1321.71 - 100.0, 1321.71 + 100.0);
     
     // if (xi_mass_test.test(ads.trec_xim.M()))
-    // {
-    // #ifdef SHOWREJECTED
-    //     ads.fRejected = ERR_MASS_OUT_OF_RANGE;
-    // #else
-    //     ads.ret = ERR_MASS_OUT_OF_RANGE;
-    //     return ads;
-    // #endif /*SHOWREJECTED*/
-    // }
+    if((ads.trec_xim.M() > (1321.71 - 100.0)) and (ads.trec_xim.M() < (1321.71 + 100.0)))
+    {
+    #ifdef SHOWREJECTED
+        ads.fRejected = ERR_MASS_OUT_OF_RANGE;
+    #else
+        ads.ret = ERR_MASS_OUT_OF_RANGE;
+        return ads;
+    #endif /*SHOWREJECTED*/
+    }
     
     return ads;
 }
