@@ -30,6 +30,7 @@
 #include "KTools.h"
 #include "KTrackInspector.h"
 #include "KBeamCalibration.h"
+#include "KCutInside.h"
 
 #include "ef_xim_pp45.h"
 
@@ -44,12 +45,12 @@ static const float E_total_target   = E_kin_target + HPhysicsConstants::mass(14)
 static const float pz_beam          = sqrt(E_total_beam*E_total_beam-HPhysicsConstants::mass(14)*HPhysicsConstants::mass(14));
 
 static const float LAMBDA_MASS = 1115.9;
-static const float XI_MASS = 1115.9;
+static const float XI_MASS = 1321.71;
 
 static const float D2R = TMath::DegToRad();
 static const float R2D = TMath::RadToDeg();
 
-static AnaDataSet g_ads;
+static AnaDataSet g_ads, g_adsXi;
 
 float calcAngleVar(HGeomVector & v1, HGeomVector & v2)
 {
@@ -148,7 +149,7 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                     continue;
 
                 AnaDataSet ads_xi_ret = singlePairAnalysisXi(fEvent, event_num, ads_ret, B_PID, pcand, k);
-                ads_xi_ret.fIsFwDetData = 0;   // TODO add branch for Xi
+                ads_xi_ret.fIsFwDetDataXi = 0;  
 
                 if (ads_xi_ret.ret == ERR_MASS_OUT_OF_RANGE)
                     continue;
@@ -175,7 +176,7 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                     continue;
 
                 AnaDataSet ads_xi_ret = singleFwDetPairAnalysisXi(fEvent, event_num, ads_ret, B_PID, vcand, k);
-                ads_xi_ret.fIsFwDetData = 1;
+                ads_xi_ret.fIsFwDetDataXi = 1;
 
                 if (ads_xi_ret.ret == ERR_MASS_OUT_OF_RANGE)
                     continue;
@@ -199,12 +200,13 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
 
         for(int j = 0; j < /*fMultB*/g_ads.fFwDetTracksNum; ++j)
         {
+	    AnaDataSet ads_ret = singleFwDetPairAnalysis(fEvent, event_num, A_PID, B_PID, pcand, vcand, i, j);
+	    
             if (hades_tracks[i].pid[A_PID][KT::Charge])
-            {
-//             if (!fwdet_tracks[j].pid[B_PID][KT::Charge])
-//                 continue;
-
-                AnaDataSet ads_ret = singleFwDetPairAnalysis(fEvent, event_num, A_PID, B_PID, pcand, vcand, i, j);
+	    {		
+//		if (!fwdet_tracks[j].pid[B_PID][KT::Charge])
+//		    continue;
+               
                 ads_ret.fIsFwDetData = 2;
 
                 if (ads_ret.ret == ERR_MASS_OUT_OF_RANGE)
@@ -218,10 +220,10 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
 
                 hades_tracks[i].is_used = true;
 
-                mtd_list.push_back(ads_ret.fMTD);
+//	        mtd_list.push_back(ads_ret.fMTD);
 
-                ads_arr.push_back(ads_ret);
-                ++combo_cnt;
+//		ads_arr.push_back(ads_ret);
+//              ++combo_cnt;
             }
 
             if (hades_tracks[i].pid[B_PID][KT::Charge])
@@ -229,7 +231,7 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
 //             if (!fwdet_tracks[j].pid[A_PID][KT::Charge])
 //                 continue;
 
-                AnaDataSet ads_ret = singleFwDetPairAnalysis(fEvent, event_num, B_PID, A_PID, pcand, vcand, i, j);
+		//  AnaDataSet ads_ret = singleFwDetPairAnalysis(fEvent, event_num, B_PID, A_PID, pcand, vcand, i, j);
                 ads_ret.fIsFwDetData = 1;
 
                 if (ads_ret.ret == ERR_MASS_OUT_OF_RANGE)
@@ -241,11 +243,64 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 if (ads_ret.ret <= NULL_DATA)
                     continue;
 
-                hades_tracks[i].is_used = true;
+		hades_tracks[i].is_used = true;
 
-                mtd_list.push_back(ads_ret.fMTD);
+		// mtd_list.push_back(ads_ret.fMTD);
 
-                ads_arr.push_back(ads_ret);
+		// ads_arr.push_back(ads_ret);
+		// ++combo_cnt;
+            }
+
+	    for(int k = 0; k < g_ads.fHadesTracksNum; ++k)
+            {
+                if (k == j)
+                    continue;
+
+                if (!hades_tracks[k].pid[B_PID][KT::Charge])
+                    continue;
+
+                AnaDataSet ads_xi_ret = singlePairAnalysisXi(fEvent, event_num, ads_ret, B_PID, pcand, k);
+                ads_xi_ret.fIsFwDetDataXi = 0;  
+
+                if (ads_xi_ret.ret == ERR_MASS_OUT_OF_RANGE)
+                    continue;
+
+                if (ads_xi_ret.ret == ERR_NO_LAMBDA)
+                    continue;
+
+                if (ads_xi_ret.ret <= NULL_DATA)
+                    continue;
+
+		hades_tracks[k].is_used = true;
+
+                mtd_list.push_back(ads_xi_ret.fMTD);
+
+                ads_arr.push_back(ads_xi_ret);
+                ++combo_cnt;
+            }
+
+	    for(int k = 0; k < g_ads.fFwDetTracksNum; ++k)
+            {
+                if (!fwdet_tracks[k].pid[B_PID][KT::Charge])
+                    continue;
+
+                AnaDataSet ads_xi_ret = singleFwDetPairAnalysisXi(fEvent, event_num, ads_ret, B_PID, vcand, k);
+                ads_xi_ret.fIsFwDetDataXi = 1;
+
+                if (ads_xi_ret.ret == ERR_MASS_OUT_OF_RANGE)
+                    continue;
+
+                if (ads_xi_ret.ret == ERR_NO_LAMBDA)
+                    continue;
+
+                if (ads_xi_ret.ret <= NULL_DATA)
+                    continue;
+
+		fwdet_tracks[k].is_used = true;
+
+                mtd_list.push_back(ads_xi_ret.fMTD);
+
+                ads_arr.push_back(ads_xi_ret);
                 ++combo_cnt;
             }
         }
@@ -770,6 +825,96 @@ AnaDataSet ef_xim_pp45::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*
 
 AnaDataSet ef_xim_pp45::singlePairAnalysisXi(HEvent* fEvent, Int_t event_num, AnaDataSet& ads_a, UInt_t pid_b, HCategory* pcand, int trackB_num, bool quick_run)
 {
+ HGeomVector beamVector; // FIXME
+//     if (analysisType == KT::Exp)
+//     {
+//         beamVector = beamCal->calculateBeamOffset(event->getRunId());
+//     } else {
+        beamVector = refBeamVector;
+//     }
+
+    TVector3 p_beam_vec(beamVector.X(), beamVector.Y(), 3000.0);
+//     p_beam_vec.SetMag(pz_beam); FIXME
+
+    const TLorentzVector Vec_pp45_beam      = TLorentzVector(p_beam_vec.X(), p_beam_vec.Y(), p_beam_vec.Z(), E_total_beam);
+    const TLorentzVector Vec_pp45_target    = TLorentzVector(0.0, 0.0, 0.0, E_total_target);
+    const TLorentzVector Vec_pp45_sum       = Vec_pp45_beam + Vec_pp45_target;
+    const float cmrap                       = Vec_pp45_sum.Rapidity();
+
+    TLorentzVector vec_beam_cms             = Vec_pp45_beam;
+    vec_beam_cms.Boost(-Vec_pp45_sum.BoostVector());
+
+    AnaDataSet ads = ads_a;
+    ads.init();
+//     ads.fGeantWeight = pcand->getGeantGenweight(); FIXME
+
+    HGeomVector dirMother, PrimVertexMother;
+
+    // TObject * o_a = pcand->getObject(ads_a);
+    TObject * o_b = pcand->getObject(trackB_num);
+
+    KTrackReconstructor trackA = ads_a.trec_lambda;
+    HParticleCand trackB = *(HParticleCand*)o_b;
+
+    //trackA.calc4vectorProperties(HPhysicsConstants::mass(pid_a));
+    //trackA.calc4vectorProperties(LAMBDA_MASS);
+    // trackB.calc4vectorProperties(HPhysicsConstants::mass(pid_b));
+
+	//float momentum_A_corr = 0;
+    //float momentum_B_corr = 0;
+
+    //Float_t fMomA = trackA.getMomentum();
+    //Float_t fMomB = trackB.getMomentum();
+
+    /*  if (flag_elosscorr and analysisType == KT::Exp)
+    {
+        // with corr
+	momentum_A_corr = eLossCorr->getCorrMom(pid_a, fMomA, trackA.getTheta());
+        momentum_B_corr = eLossCorr->getCorrMom(pid_b, fMomB, trackB.getTheta());
+    }
+    else
+    {
+        // no corr
+        momentum_A_corr = fMomA;
+        momentum_B_corr = fMomB;
+	momentum_A_corr = eLossCorr->getCorrMom(pid_a, fMomA, trackA.getTheta());
+	momentum_B_corr = eLossCorr->getCorrMom(pid_b, fMomB, trackB.getTheta());
+
+	}*/
+
+    // trackA.setMomentum(momentum_A_corr);
+    //trackB.setMomentum(momentum_B_corr);
+
+    //trackA.calc4vectorProperties(HPhysicsConstants::mass(pid_a));
+    // trackA.calc4vectorProperties(LAMBDA_MASS);
+    // trackB.calc4vectorProperties(HPhysicsConstants::mass(pid_b));
+    
+    // ads.fMomAx = trackA.Px();
+    // ads.fMomAy = trackA.Py();
+    // ads.fMomAz = trackA.Pz();
+
+    // ads.fMomBx = trackB.Px();
+    // ads.fMomBy = trackB.Py();
+    // ads.fMomBz = trackB.Pz();
+
+    // ads.tr_xim_a = trackA;
+    // ads.tr_xim_b = trackB;
+    ads.trec_xim.reconstruct(trackA, trackB);
+
+    // // I do not need so many data!
+    // KCutInside<Float_t> xi_mass_test(1321.71 - 100.0, 1321.71 + 100.0);
+    
+    // if (xi_mass_test.test(ads.trec_xim.M()))
+    // {
+    // #ifdef SHOWREJECTED
+    //     ads.fRejected = ERR_MASS_OUT_OF_RANGE;
+    // #else
+    //     ads.ret = ERR_MASS_OUT_OF_RANGE;
+    //     return ads;
+    // #endif /*SHOWREJECTED*/
+    // }
+
+    return ads;
 }
 
 AnaDataSet ef_xim_pp45::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*event_num*/, UInt_t pid_a, UInt_t pid_b, HCategory * pcand, HCategory * vcand, int trackA_num, int trackB_num, bool quick_run)
@@ -1080,7 +1225,7 @@ AnaDataSet ef_xim_pp45::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*eve
     }
     // lambda boost, m from PDG
     {
-        TLorentzVector lpc;
+        TLorentzVector lpc(0, 0, 1, 0);
         lpc.SetRho(lambdaAB.P());
         lpc.SetTheta(lambdaAB.Theta());
         lpc.SetPhi(lambdaAB.Phi());
@@ -1230,6 +1375,91 @@ AnaDataSet ef_xim_pp45::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*eve
 
 AnaDataSet ef_xim_pp45::singleFwDetPairAnalysisXi(HEvent* fEvent, Int_t event_num, AnaDataSet& ads_a, UInt_t pid_b, HCategory* vcand, int trackB_num, bool quick_run)
 {
+    HGeomVector beamVector; // FIXME
+//     if (analysisType == KT::Exp)
+//     {
+//         beamVector = beamCal->calculateBeamOffset(event->getRunId());
+//     } else {
+        beamVector = refBeamVector;
+//     }
+
+    TVector3 p_beam_vec(beamVector.X(), beamVector.Y(), 3000.0);
+//     p_beam_vec.SetMag(pz_beam); FIXME
+
+    const TLorentzVector Vec_pp45_beam      = TLorentzVector(p_beam_vec.X(), p_beam_vec.Y(), p_beam_vec.Z(), E_total_beam);
+    const TLorentzVector Vec_pp45_target    = TLorentzVector(0.0, 0.0, 0.0, E_total_target);
+    const TLorentzVector Vec_pp45_sum       = Vec_pp45_beam + Vec_pp45_target;
+    const float cmrap                       = Vec_pp45_sum.Rapidity();
+
+    TLorentzVector vec_beam_cms             = Vec_pp45_beam;
+    vec_beam_cms.Boost(-Vec_pp45_sum.BoostVector());
+
+
+    AnaDataSet ads = ads_a;
+    ads.init();
+//     ads.fGeantWeight = pcand->getGeantGenweight(); FIXME
+
+    HGeomVector dirMother, PrimVertexMother;
+
+    //HParticleCandSim trackA = *(HParticleCandSim*)pcand->getObject(trackA_num);
+    KTrackReconstructor trackA = ads_a.trec_lambda;
+    HFwDetCand trackB = *(HFwDetCand*)vcand->getObject(trackB_num);
+
+    /* trackA.calc4vectorProperties(HPhysicsConstants::mass(pid_a));
+    trackB.calc4vectorProperties(HPhysicsConstants::mass(pid_b));
+
+    float momentum_A_corr = 0;
+//     float momentum_B_corr = 0;
+
+    Float_t fMomA = trackA.getMomentum();
+//     Float_t fMomB = trackB.P();
+
+    if (flag_elosscorr and analysisType == KT::Exp)
+    {
+        // with corr
+        momentum_A_corr = eLossCorr->getCorrMom(pid_a, fMomA, trackA.getTheta());
+//         momentum_B_corr = eLossCorr->getCorrMom(pid_b, fMomB, trackB.getTheta());
+    }
+    else
+    {
+        // no corr
+        momentum_A_corr = fMomA;
+//         momentum_B_corr = fMomB;
+        momentum_A_corr = eLossCorr->getCorrMom(pid_a, fMomA, trackA.getTheta());
+//         momentum_B_corr = eLossCorr->getCorrMom(pid_b, fMomB, trackB.getTheta());
+
+    }
+
+    trackA.setMomentum(momentum_A_corr);
+//     trackB.setMomentum(momentum_B_corr);
+
+    trackA.calc4vectorProperties(HPhysicsConstants::mass(pid_a));
+//     trackB.calc4vectorProperties(HPhysicsConstants::mass(pid_b));
+
+    ads.fMomAx = trackA.Px();
+    ads.fMomAy = trackA.Py();
+    ads.fMomAz = trackA.Pz();
+
+    ads.fMomBx = trackB.Px();
+    ads.fMomBy = trackB.Py();
+    ads.fMomBz = trackB.Pz();
+    */
+    ads.trec_xim.reconstruct(trackA, trackB);
+
+    // // we do not need so many data!
+    // KCutInside<Float_t> xi_mass_test(1321.71 - 100.0, 1321.71 + 100.0);
+    
+    // if (xi_mass_test.test(ads.trec_xim.M()))
+    // {
+    // #ifdef SHOWREJECTED
+    //     ads.fRejected = ERR_MASS_OUT_OF_RANGE;
+    // #else
+    //     ads.ret = ERR_MASS_OUT_OF_RANGE;
+    //     return ads;
+    // #endif /*SHOWREJECTED*/
+    // }
+    
+    return ads;
 }
 
 void ef_xim_pp45::configureTree(TTree * tree)

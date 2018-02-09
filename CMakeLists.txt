@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.0)
 project(EventFilter CXX)
 string(TOUPPER "${PROJECT_NAME}" CAPS_PROJECT_NAME)
 

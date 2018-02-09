@@ -80,6 +80,7 @@ struct AnaDataSet
     Int_t fHadesTracksNum;
     Int_t fFwDetTracksNum;
     Int_t fIsFwDetData;
+    Int_t fIsFwDetDataXi;
     Int_t fEventLCounter;
     Int_t fRealLambda;
     Int_t fPrimLambda;
@@ -122,6 +123,8 @@ struct AnaDataSet
     KTrack tr_lambda_cms;
     KTrack tr_lambda_a;
     KTrack tr_lambda_b;
+    KTrack tr_xim_cms;
+    KTrack tr_xim_b;
 
     KVertex vx_primary;
     KVertex vx_lambda;
