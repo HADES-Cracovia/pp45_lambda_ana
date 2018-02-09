@@ -115,8 +115,14 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
     size_t combo_cnt = 0;
     std::vector<float> mtd_list;
 
+    // loops on each combination: p(L)-pi(L)-pi(Xi),
+    // where: p(L) and pi(L) comes from Lambda and pi(Xi) comes from XI
+    // fields can be H(ades) or F(wDet)
+
+    // H-
     for(int i = 0; i < g_ads.fHadesTracksNum; ++i)
     {
+        // H-H-
         for(int j = 0; j < g_ads.fHadesTracksNum; ++j)
         {
             if (!hades_tracks[i].pid[A_PID][KT::Charge])
@@ -139,7 +145,7 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
 
             if (ads_ret.ret <= NULL_DATA)
                 continue;
-
+            // H-H-H
             for(int k = 0; k < g_ads.fHadesTracksNum; ++k)
             {
                 if (k == j)
@@ -170,6 +176,7 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 ++combo_cnt;
             }
 
+            // H-H-F
             for(int k = 0; k < g_ads.fFwDetTracksNum; ++k)
             {
                 if (!fwdet_tracks[k].pid[B_PID][KT::Charge])
@@ -200,13 +207,12 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
 
         for(int j = 0; j < /*fMultB*/g_ads.fFwDetTracksNum; ++j)
         {
-	    AnaDataSet ads_ret = singleFwDetPairAnalysis(fEvent, event_num, A_PID, B_PID, pcand, vcand, i, j);
-	    
+            AnaDataSet ads_ret;
+
+            // H-F
             if (hades_tracks[i].pid[A_PID][KT::Charge])
-	    {		
-//		if (!fwdet_tracks[j].pid[B_PID][KT::Charge])
-//		    continue;
-               
+            {
+                ads_ret = singleFwDetPairAnalysis(fEvent, event_num, A_PID, B_PID, pcand, vcand, i, j);
                 ads_ret.fIsFwDetData = 2;
 
                 if (ads_ret.ret == ERR_MASS_OUT_OF_RANGE)
@@ -219,19 +225,13 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                     continue;
 
                 hades_tracks[i].is_used = true;
-
-//	        mtd_list.push_back(ads_ret.fMTD);
-
-//		ads_arr.push_back(ads_ret);
-//              ++combo_cnt;
+                fwdet_tracks[j].is_used = true;
             }
-
+            else
+            // F-H
             if (hades_tracks[i].pid[B_PID][KT::Charge])
             {
-//             if (!fwdet_tracks[j].pid[A_PID][KT::Charge])
-//                 continue;
-
-		//  AnaDataSet ads_ret = singleFwDetPairAnalysis(fEvent, event_num, B_PID, A_PID, pcand, vcand, i, j);
+                ads_ret = singleFwDetPairAnalysis(fEvent, event_num, B_PID, A_PID, pcand, vcand, i, j);
                 ads_ret.fIsFwDetData = 1;
 
                 if (ads_ret.ret == ERR_MASS_OUT_OF_RANGE)
@@ -243,17 +243,18 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 if (ads_ret.ret <= NULL_DATA)
                     continue;
 
-		hades_tracks[i].is_used = true;
-
-		// mtd_list.push_back(ads_ret.fMTD);
-
-		// ads_arr.push_back(ads_ret);
-		// ++combo_cnt;
+                hades_tracks[i].is_used = true;
+                fwdet_tracks[j].is_used = true;
+            }
+            else
+            {
+                continue;
             }
 
-	    for(int k = 0; k < g_ads.fHadesTracksNum; ++k)
+            // ?-?-H
+            for(int k = 0; k < g_ads.fHadesTracksNum; ++k)
             {
-                if (k == j)
+                if (k == i)
                     continue;
 
                 if (!hades_tracks[k].pid[B_PID][KT::Charge])
@@ -271,7 +272,7 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 if (ads_xi_ret.ret <= NULL_DATA)
                     continue;
 
-		hades_tracks[k].is_used = true;
+                hades_tracks[k].is_used = true;
 
                 mtd_list.push_back(ads_xi_ret.fMTD);
 
@@ -279,8 +280,12 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 ++combo_cnt;
             }
 
-	    for(int k = 0; k < g_ads.fFwDetTracksNum; ++k)
+            // ?-?-F
+            for(int k = 0; k < g_ads.fFwDetTracksNum; ++k)
             {
+                if (k == j)
+                    continue;
+
                 if (!fwdet_tracks[k].pid[B_PID][KT::Charge])
                     continue;
 
@@ -296,7 +301,7 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 if (ads_xi_ret.ret <= NULL_DATA)
                     continue;
 
-		fwdet_tracks[k].is_used = true;
+                fwdet_tracks[k].is_used = true;
 
                 mtd_list.push_back(ads_xi_ret.fMTD);
 
@@ -823,7 +828,7 @@ AnaDataSet ef_xim_pp45::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*
     return ads;
 }
 
-AnaDataSet ef_xim_pp45::singlePairAnalysisXi(HEvent* fEvent, Int_t event_num, AnaDataSet& ads_a, UInt_t pid_b, HCategory* pcand, int trackB_num, bool quick_run)
+AnaDataSet ef_xim_pp45::singlePairAnalysisXi(HEvent* fEvent, Int_t event_num, const AnaDataSet& ads_a, UInt_t pid_b, HCategory* pcand, int trackB_num, bool quick_run)
 {
  HGeomVector beamVector; // FIXME
 //     if (analysisType == KT::Exp)
@@ -1373,7 +1378,7 @@ AnaDataSet ef_xim_pp45::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*eve
     return ads;
 }
 
-AnaDataSet ef_xim_pp45::singleFwDetPairAnalysisXi(HEvent* fEvent, Int_t event_num, AnaDataSet& ads_a, UInt_t pid_b, HCategory* vcand, int trackB_num, bool quick_run)
+AnaDataSet ef_xim_pp45::singleFwDetPairAnalysisXi(HEvent* fEvent, Int_t event_num, const AnaDataSet& ads_a, UInt_t pid_b, HCategory* vcand, int trackB_num, bool quick_run)
 {
     HGeomVector beamVector; // FIXME
 //     if (analysisType == KT::Exp)
@@ -1511,6 +1516,7 @@ void ef_xim_pp45::configureTree(TTree * tree)
     tree->Branch("fHadesTracksNum", &g_ads.fHadesTracksNum, "fHadesTracksNum/I");
     tree->Branch("fFwDetTracksNum", &g_ads.fFwDetTracksNum, "fFwDetTracksNum/I");
     tree->Branch("fIsFwDetData",    &g_ads.fIsFwDetData,    "fIsFwDetData/I");
+    tree->Branch("fIsFwDetDataXi",  &g_ads.fIsFwDetDataXi,  "fIsFwDetDataXi/I");
 
     tree->Branch("fMultA",          &g_ads.fMultA,          "fMultA/I");
     tree->Branch("fMultB",          &g_ads.fMultB,          "fMultB/I");

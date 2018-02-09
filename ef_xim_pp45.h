@@ -233,8 +233,8 @@ protected:
 
     AnaDataSet singlePairAnalysis(HEvent * fEvent, Int_t event_num, UInt_t pid_a, UInt_t pid_b, HCategory * pcand, int trackA_num, int trackB_num, bool quick_run = false);
     AnaDataSet singleFwDetPairAnalysis(HEvent * fEvent, Int_t event_num, UInt_t pid_a, UInt_t pid_b, HCategory * pcand, HCategory * vcand, int trackA_num, int trackB_num, bool quick_run = false);
-    AnaDataSet singlePairAnalysisXi(HEvent * fEvent, Int_t event_num, AnaDataSet & ads_a, UInt_t pid_b, HCategory * pcand, int trackB_num, bool quick_run = false);
-    AnaDataSet singleFwDetPairAnalysisXi(HEvent * fEvent, Int_t event_num, AnaDataSet & ads_a, UInt_t pid_b, HCategory * vcand, int trackB_num, bool quick_run = false);
+    AnaDataSet singlePairAnalysisXi(HEvent * fEvent, Int_t event_num, const AnaDataSet & ads_a, UInt_t pid_b, HCategory * pcand, int trackB_num, bool quick_run = false);
+    AnaDataSet singleFwDetPairAnalysisXi(HEvent * fEvent, Int_t event_num, const AnaDataSet & ads_a, UInt_t pid_b, HCategory * vcand, int trackB_num, bool quick_run = false);
 
     HEnergyLossCorrPar * eLossCorr;
     KBeamCalibration * beamCal;
