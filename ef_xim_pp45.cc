@@ -358,26 +358,6 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
 
 AnaDataSet ef_xim_pp45::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*/, UInt_t pid_a, UInt_t pid_b, HCategory * pcand, int trackA_num, int trackB_num, bool quick_run)
 {
-    HGeomVector beamVector; // FIXME
-//     if (analysisType == KT::Exp)
-//     {
-//         beamVector = beamCal->calculateBeamOffset(event->getRunId());
-//     } else {
-        beamVector = refBeamVector;
-//     }
-
-    TVector3 p_beam_vec(beamVector.X(), beamVector.Y(), 3000.0);
-//     p_beam_vec.SetMag(pz_beam); FIXME
-
-    const TLorentzVector Vec_pp35_beam      = TLorentzVector(p_beam_vec.X(), p_beam_vec.Y(), p_beam_vec.Z(), E_total_beam);
-    const TLorentzVector Vec_pp35_target    = TLorentzVector(0.0, 0.0, 0.0, E_total_target);
-    const TLorentzVector Vec_pp35_sum       = Vec_pp35_beam + Vec_pp35_target;
-    const float cmrap                       = Vec_pp35_sum.Rapidity();
-
-    TLorentzVector vec_beam_cms             = Vec_pp35_beam;
-    vec_beam_cms.Boost(-Vec_pp35_sum.BoostVector());
-
-
     AnaDataSet ads = g_ads;
     ads.init();
 //     ads.fGeantWeight = pcand->getGeantGenweight(); FIXME
@@ -470,91 +450,6 @@ AnaDataSet ef_xim_pp45::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*
 
     if (analysisType == KT::Sim && tcs_a && tcs_b)
     {
-        HParticleCandSim trackA = *tcs_a;
-        HParticleCandSim trackB = *tcs_b;
-
-        TLorentzVector geaA; geaA.SetXYZM(trackA.getGeantxMom(), trackA.getGeantyMom(), trackA.getGeantzMom(), HPhysicsConstants::mass(pid_a));
-        TLorentzVector geaB; geaB.SetXYZM(trackB.getGeantxMom(), trackB.getGeantyMom(), trackB.getGeantzMom(), HPhysicsConstants::mass(pid_b));
-        TLorentzVector geaAB = geaA + geaB;
-        ads.fGeaP = geaAB.P();
-        ads.fGeaPx = geaAB.Px();
-        ads.fGeaPy = geaAB.Py();
-        ads.fGeaPz = geaAB.Pz();
-        ads.fGeaTheta = geaAB.Theta() * R2D;
-        ads.fGeaPhi = geaAB.Phi() * R2D;
-        ads.fGeaAngleAB = geaA.Angle(geaB.Vect());
-
-        TLorentzVector geaAB_cms = geaAB;
-        geaAB_cms.Boost(-Vec_pp35_sum.BoostVector());
-        ads.fGeaXf = fabs(geaAB_cms.Pz()/vec_beam_cms.Pz());
-
-        // find plane normal
-        TVector3 beam = Vec_pp35_beam.Vect();
-        TVector3 lambda = geaAB.Vect();
-
-        TVector3 n_x = beam.Cross(lambda);
-        n_x *= (1.0/n_x.Mag());
-
-        TVector3 n_z = lambda;
-        n_z *= (1.0/n_z.Mag());
-
-        TVector3 n_y = n_z.Cross(n_x);
-
-        // lambda boost
-        TLorentzVector l_lambda = geaAB;
-
-        // proton -boost
-        TVector3 beta_vec = l_lambda.BoostVector();
-        TLorentzVector l_proton = geaA;
-        l_proton.Boost(-beta_vec);
-
-        TVector3 p_proton = l_proton.Vect();
-        ads.fGeaPolX = p_proton.Dot(n_x) / (p_proton.Mag() * n_x.Mag());
-        ads.fGeaPolY = p_proton.Dot(n_y) / (p_proton.Mag() * n_y.Mag());
-        ads.fGeaPolZ = p_proton.Dot(n_z) / (p_proton.Mag() * n_z.Mag());
-        ads.fGeaZetaX = TMath::ACos(ads.fGeaPolX) * R2D;
-        ads.fGeaZetaY = TMath::ACos(ads.fGeaPolY) * R2D;
-        ads.fGeaZetaZ = TMath::ACos(ads.fGeaPolZ) * R2D;
-
-        GeantxVertexA    = trackA.getGeantxVertex();
-        GeantyVertexA    = trackA.getGeantyVertex();
-        GeantzVertexA    = trackA.getGeantzVertex();
-        GeantxVertexB    = trackB.getGeantxVertex();
-        GeantyVertexB    = trackB.getGeantyVertex();
-        GeantzVertexB    = trackB.getGeantzVertex();
-
-        int GeantPIDA = trackA.getGeantPID();
-        int GeantPIDB = trackB.getGeantPID();
-
-        int GeantPIDAparent = trackA.getGeantParentPID();
-        int GeantPIDBparent = trackB.getGeantParentPID();
-
-        int GeantPIDAGparent = trackA.getGeantGrandParentPID();
-        int GeantPIDBGparent = trackB.getGeantGrandParentPID();
-
-        // the simulated vertex of particleA and particleB has to be the same
-        ads.fRealLambda = ( (GeantPIDA == 14 and GeantPIDAparent == 18 and GeantPIDB == 9 and GeantPIDBparent == 18) or (GeantPIDA == 14 and GeantPIDAparent == 18 and GeantPIDB == 6 and GeantPIDBparent == 9 and GeantPIDBGparent == 18));
-
-//         if (ads.fRealLambda)
-//         {
-//             printf("*************** TRACK A ***************\n");
-//             trackA.print(1<<4 | 1<<2);
-//             printf("*************** TRACK B ***************\n");
-//             trackB.print(1<<4 | 1<<2);
-//         }
-
-//         ads.fGeantInfoNum = event->getGeantInfoNum(); FIXME
-
-        // FIXME
-//         if (!wasLambda or (flag_nosigmas and wasSigma))
-//         {
-// #ifdef SHOWREJECTED
-//             ads.fRejected = ERR_NO_LAMBDA;
-// #else
-//             ads.ret = ERR_NO_LAMBDA;
-// //            return ads;
-// #endif /*SHOWREJECTED*/
-//         }
     }
 
 //     if (quick_run) printf(" : %f, : %f\n", trackA.P(), trackB.P());
@@ -631,83 +526,6 @@ AnaDataSet ef_xim_pp45::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*
     ads.fVertDistA = ads.trec_lambda.getMTDa();
     ads.fVertDistB = ads.trec_lambda.getMTDb();
 
-    // HERE we assign PV-SV vactor for Lambda
-
-//    TVector3 vLpsv = _v1;
-//    vLpsv.SetMag(ads.trec_lambda.P());
-
-//    TParticleTrack Lpsv;
-//    Lpsv.setMomentum(vLpsv.Mag());
-//    Lpsv.setTheta(vLpsv.Theta() * R2D);
-//    Lpsv.setPhi(vLpsv.Phi() * R2D);
-//    Lpsv.calc4vectorProperties(HPhysicsConstants::mass(18));
-
-    TLorentzVector lambdaAB = ads.trec_lambda;
-//    TLorentzVector lambdaAB = Lpsv;
-
-    // find plane normal
-    TVector3 beam = Vec_pp35_beam.Vect();
-    TVector3 lambda = lambdaAB.Vect();
-//    lambda = Lpsv.Vect();
-
-    TVector3 n_x = beam.Cross(lambda);
-    n_x *= (1.0/n_x.Mag());
-
-    TVector3 n_z = lambda;
-    n_z *= (1.0/n_z.Mag());
-
-    TVector3 n_y = n_z.Cross(n_x);
-
-    // lambda boost, m from IM
-    {
-        TLorentzVector l_lambda = lambdaAB;
-
-        // proton -boost
-        TVector3 beta_vec = l_lambda.BoostVector();
-        TLorentzVector l_proton = trackA;
-        l_proton.Boost(-beta_vec);
-
-//        TLorentzVector try_la = l_lambda; try_la.Boost(-beta_vec); printf("P after boost = %f\n", try_la.P());
-
-        TVector3 p_proton = l_proton.Vect();
-        ads.vr_pol.setX( p_proton.Dot(n_x) / (p_proton.Mag() * n_x.Mag()) );
-        ads.vr_pol.setY( p_proton.Dot(n_y) / (p_proton.Mag() * n_y.Mag()) );
-        ads.vr_pol.setZ( p_proton.Dot(n_z) / (p_proton.Mag() * n_z.Mag()) );
-
-        ads.vr_zeta.setX( TMath::ACos(ads.vr_pol.getX()) * R2D );
-        ads.vr_zeta.setY( TMath::ACos(ads.vr_pol.getY()) * R2D );
-        ads.vr_zeta.setZ( TMath::ACos(ads.vr_pol.getZ()) * R2D );
-    }
-    // lambda boost, m from PDG
-    {
-        TLorentzVector lpc(0, 0, 1, 0);
-        lpc.SetRho(lambdaAB.P());
-        lpc.SetTheta(lambdaAB.Theta());
-        lpc.SetPhi(lambdaAB.Phi());
-        lpc.SetE(sqrt(HPhysicsConstants::mass(18)*HPhysicsConstants::mass(18) + lambdaAB.P()*lambdaAB.P()));
-
-        TLorentzVector l_lambda = lpc;
-
-        // proton -boost
-        TVector3 beta_vec = l_lambda.BoostVector();
-        TLorentzVector l_proton = trackA;
-        l_proton.Boost(-beta_vec);
-
-        TVector3 p_proton = l_proton.Vect();
-        ads.vr_poli.setX( p_proton.Dot(n_x) / (p_proton.Mag() * n_x.Mag()) );
-        ads.vr_poli.setY( p_proton.Dot(n_y) / (p_proton.Mag() * n_y.Mag()) );
-        ads.vr_poli.setZ( p_proton.Dot(n_z) / (p_proton.Mag() * n_z.Mag()) );
-
-        ads.vr_zetai.setX( TMath::ACos(ads.vr_poli.getX()) * R2D );
-        ads.vr_zetai.setY( TMath::ACos(ads.vr_poli.getY()) * R2D );
-        ads.vr_zetai.setZ( TMath::ACos(ads.vr_poli.getZ()) * R2D );
-    }
-
-//     double dist2 = pow(PrimVertexMother.getX() - beamVector.getX(), 2.0) +
-//         pow(PrimVertexMother.getY() - beamVector.getY(), 2.0);
-
-//     if ( !(dist2 < 100.0 and PrimVertexMother.getZ() < 0.0 and PrimVertexMother.getZ() > -90.0) )
-//         return ERR_NOT_IN_VERTEX;
     if ( !(ads.vx_primary.getR() < 10.0 and ads.vx_primary.getZ() < 0.0 and ads.vx_primary.getZ() > -90.0) )
     {
 #ifdef SHOWREJECTED
@@ -721,6 +539,14 @@ AnaDataSet ef_xim_pp45::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*
     ads.fAngleAB    = trackA.Angle(trackB.Vect());
     ads.fRelAngleA  = ads.trec_lambda.Angle(trackA.Vect());
     ads.fRelAngleB  = ads.trec_lambda.Angle(trackB.Vect());
+
+    const TLorentzVector Vec_pp35_beam      = TLorentzVector(0, 0, pz_beam, E_total_beam);
+    const TLorentzVector Vec_pp35_target    = TLorentzVector(0.0, 0.0, 0.0, E_total_target);
+    const TLorentzVector Vec_pp35_sum       = Vec_pp35_beam + Vec_pp35_target;
+    const float cmrap                       = Vec_pp35_sum.Rapidity();
+
+    TLorentzVector vec_beam_cms             = Vec_pp35_beam;
+    vec_beam_cms.Boost(-Vec_pp35_sum.BoostVector());
 
     //Boost in CMS: ***********************************************
     TLorentzVector Vec_beam_target = Vec_pp35_beam+Vec_pp35_target;
@@ -749,88 +575,15 @@ AnaDataSet ef_xim_pp45::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*
 
     ads.fMt                = ads.trec_lambda.Mt();               // Transverse mass
 
-    if (flag_nosecvertcuts == 0)
-    {
-    if (analysisType == KT::Sim)     //for simulated data
-    {
-//                 if( !(
-//                      fMinTrackDist < par_Mtd/*kMTD*/
-//                      && VerDistA > par_VertDistA/*kVDAB*/
-//                      && VerDistB > par_VertDistB/*kVDAB*/
-//                      && VerDistX > par_VertDistX/*kVDX*/
-//                      &&
-//                      GeantxVertexA == GeantxVertexB      // the simulated vertex of particleA and particleB has to be the same
-//                      && GeantyVertexA == GeantyVertexB
-//                      && GeantzVertexA == GeantzVertexB
-//                     fRealLambda
-//                           )
-//                   )
-//                 {
-//                     continue;
-//                 }
-    }
-    else       //for experimental data
-    {
-//                 if ( !(
-//                     fMinTrackDist < par_Mtd/*kMTD*/
-//                      && VerDistA > par_VertDistA/*kVDAB*/
-//                      && VerDistB > par_VertDistB/*kVDAB*/
-//                      && VerDistX > par_VertDistX/*kVDX*/
-//                          )
-//                       )
-//                 {
-//                     continue;
-//                 }
-    }
-    }
-
-//     if (analysisType == KT::Sim)     //for simulated data
-//     {
-//         if( !(GeantxVertexA == GeantxVertexB      // the simulated vertex of particleA and particleB has to be the same
-//             && GeantyVertexA == GeantyVertexB
-//             && GeantzVertexA == GeantzVertexB
-//                 )
-//             )
-//         {
-//             return ERR_SIM_VERTEX_MISSMATCH;
-//         }
-//     }
-
     ++ads.fEventLCounter;
 
-//     A_PID = KT::pip;
-//     trackA = *(HParticleCandSim*)pcand->getObject(trackA_num);
-//     trackA.calc4vectorProperties(HPhysicsConstants::mass(A_PID));
-//     KTifini::CalcSegVector(trackA.getZ(), trackA.getR(), trackA.getPhi(), trackA.getTheta(), baseA, dirA);
-//     ads.fMomA = trackA.getMomentum();
-// 
-//     if (flag_elosscorr)
-//     {
-//         // with corr
-//         momentum_A_corr = eLossCorr->getCorrMom(A_PID, ads.fMomA, trackA.getTheta());
-//     }
-//     else
-//     {
-//         // no corr
-//         momentum_A_corr = ads.fMomA;
-//     }
-// 
-//     trackA.setMomentum(momentum_A_corr);
-// 
-//     trackA.calc4vectorProperties(HPhysicsConstants::mass(A_PID));
-// 
-//     TLorentzVector trackAB_miss = trackA + trackB;
-// 
-//     ads.fM_miss = trackAB_miss.M();
-//     ads.fPVA_miss = calcAngleVar(v1, trackAB_miss);
-// 
-//     ads.ret = (LAMBDA_MASS - ads.tr_lambda.M());
+    ads.ret = ads.trec_lambda.M();
     return ads;
 }
 
 AnaDataSet ef_xim_pp45::singlePairAnalysisXi(HEvent* fEvent, Int_t event_num, const AnaDataSet& ads_a, UInt_t pid_b, HCategory* pcand, int trackB_num, bool quick_run)
 {
- HGeomVector beamVector; // FIXME
+    HGeomVector beamVector; // FIXME
 //     if (analysisType == KT::Exp)
 //     {
 //         beamVector = beamCal->calculateBeamOffset(event->getRunId());
@@ -850,8 +603,6 @@ AnaDataSet ef_xim_pp45::singlePairAnalysisXi(HEvent* fEvent, Int_t event_num, co
     vec_beam_cms.Boost(-Vec_pp45_sum.BoostVector());
 
     AnaDataSet ads = ads_a;
-    ads.init();
-//     ads.fGeantWeight = pcand->getGeantGenweight(); FIXME
 
     HGeomVector dirMother, PrimVertexMother;
 
@@ -906,19 +657,20 @@ AnaDataSet ef_xim_pp45::singlePairAnalysisXi(HEvent* fEvent, Int_t event_num, co
     // ads.tr_xim_b = trackB;
     ads.trec_xim.reconstruct(trackA, trackB);
 
-    // // I do not need so many data!
-    // KCutInside<Float_t> xi_mass_test(1321.71 - 100.0, 1321.71 + 100.0);
+    // I do not need so many data!
+    KCutInside<Float_t> xi_mass_test(XI_MASS - 100.0, XI_MASS + 100.0, KT::WEAK, KT::WEAK);
     
-    // if (xi_mass_test.test(ads.trec_xim.M()))
-    // {
-    // #ifdef SHOWREJECTED
-    //     ads.fRejected = ERR_MASS_OUT_OF_RANGE;
-    // #else
-    //     ads.ret = ERR_MASS_OUT_OF_RANGE;
-    //     return ads;
-    // #endif /*SHOWREJECTED*/
-    // }
+    if (!xi_mass_test.test(ads.trec_xim.M()))
+    {
+    #ifdef SHOWREJECTED
+        ads.fRejected = ERR_MASS_OUT_OF_RANGE;
+    #else
+        ads.ret = ERR_MASS_OUT_OF_RANGE;
+        return ads;
+    #endif /*SHOWREJECTED*/
+    }
 
+    ads.ret = ads.trec_xim.M();
     return ads;
 }
 
@@ -1401,8 +1153,6 @@ AnaDataSet ef_xim_pp45::singleFwDetPairAnalysisXi(HEvent* fEvent, Int_t event_nu
 
 
     AnaDataSet ads = ads_a;
-    ads.init();
-//     ads.fGeantWeight = pcand->getGeantGenweight(); FIXME
 
     HGeomVector dirMother, PrimVertexMother;
 
@@ -1451,18 +1201,19 @@ AnaDataSet ef_xim_pp45::singleFwDetPairAnalysisXi(HEvent* fEvent, Int_t event_nu
     */
     ads.trec_xim.reconstruct(trackA, trackB);
 
-    // // we do not need so many data!
-    // KCutInside<Float_t> xi_mass_test(1321.71 - 100.0, 1321.71 + 100.0);
+    // I do not need so many data!
+    KCutInside<Float_t> xi_mass_test(XI_MASS - 100.0, XI_MASS + 100.0, KT::WEAK, KT::WEAK);
     
-    // if (xi_mass_test.test(ads.trec_xim.M()))
-    // {
-    // #ifdef SHOWREJECTED
-    //     ads.fRejected = ERR_MASS_OUT_OF_RANGE;
-    // #else
-    //     ads.ret = ERR_MASS_OUT_OF_RANGE;
-    //     return ads;
-    // #endif /*SHOWREJECTED*/
-    // }
+    if (!xi_mass_test.test(ads.trec_xim.M()))
+    {
+    #ifdef SHOWREJECTED
+        ads.fRejected = ERR_MASS_OUT_OF_RANGE;
+    #else
+        ads.ret = ERR_MASS_OUT_OF_RANGE;
+        return ads;
+    #endif /*SHOWREJECTED*/
+    }
+    ads.ret = ads.trec_xim.M();
     
     return ads;
 }
