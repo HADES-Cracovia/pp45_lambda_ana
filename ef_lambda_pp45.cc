@@ -1027,7 +1027,7 @@ AnaDataSet ef_lambda_pp45::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*
     }
     // lambda boost, m from PDG
     {
-        TLorentzVector lpc;
+        TLorentzVector lpc(0, 0, 1, 0);
         lpc.SetRho(lambdaAB.P());
         lpc.SetTheta(lambdaAB.Theta());
         lpc.SetPhi(lambdaAB.Phi());
