@@ -29,6 +29,7 @@
 #include "KVector.h"
 #include "KTrack.h"
 #include "KTrackReconstructor.h"
+#include "KCutInside.h"
 
 // constants
 static const Float_t NULL_DATA = -10000.;
