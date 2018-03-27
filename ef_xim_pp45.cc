@@ -79,6 +79,9 @@ ef_xim_pp45::ef_xim_pp45(const TString& analysisName, const TString& treeName) :
 
     setGoodEventSelector(0);
 
+    setPidSelectionHades(KT::p, KT::Beta | KT::Charge);
+    setPidSelectionHades(KT::pim, KT::Beta | KT::Charge);
+
     eLossCorr = new HEnergyLossCorrPar("eLossCorr", "eLossCorr", "eLossCorr");
     eLossCorr->setDefaultPar("jan04");
 }
@@ -113,7 +116,6 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
     ads_arr.reserve(10000);
 
     size_t combo_cnt = 0;
-    std::vector<float> mtd_list;
 
     // loops on each combination: p(L)-pi(L)-pi(Xi),
     // where: p(L) and pi(L) comes from Lambda and pi(Xi) comes from XI
@@ -125,22 +127,19 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
         // H-H-
         for(int j = 0; j < g_ads.fHadesTracksNum; ++j)
         {
-            if (!hades_tracks[i].pid[A_PID][KT::Charge])
+            if (!(hades_tracks[i].pid[A_PID][KT::Beta] and hades_tracks[i].pid[A_PID][KT::Charge]))
                 break;
 
             if (i == j)
                 continue;
 
-            if (!hades_tracks[j].pid[B_PID][KT::Charge])
+            if (!(hades_tracks[j].pid[B_PID][KT::Beta] and hades_tracks[j].pid[B_PID][KT::Charge]))
                 continue;
 
             AnaDataSet ads_ret = singlePairAnalysis(fEvent, event_num, A_PID, B_PID, pcand, i, j);
             ads_ret.fIsFwDetData = 0;
 
             if (ads_ret.ret == ERR_MASS_OUT_OF_RANGE)
-                continue;
-
-            if (ads_ret.ret == ERR_NO_LAMBDA)
                 continue;
 
             if (ads_ret.ret <= NULL_DATA)
@@ -151,7 +150,7 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 if (k == j)
                     continue;
 
-                if (!hades_tracks[k].pid[B_PID][KT::Charge])
+                if (!(hades_tracks[k].pid[B_PID][KT::Beta] and hades_tracks[k].pid[B_PID][KT::Charge]))
                     continue;
 
                 AnaDataSet ads_xi_ret = singlePairAnalysisXi(fEvent, event_num, ads_ret, B_PID, pcand, k);
@@ -160,17 +159,12 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 if (ads_xi_ret.ret == ERR_MASS_OUT_OF_RANGE)
                     continue;
 
-                if (ads_xi_ret.ret == ERR_NO_LAMBDA)
-                    continue;
-
                 if (ads_xi_ret.ret <= NULL_DATA)
                     continue;
 
                 hades_tracks[i].is_used = true;
                 hades_tracks[j].is_used = true;
                 hades_tracks[k].is_used = true;
-
-                mtd_list.push_back(ads_xi_ret.fMTD);
 
                 ads_arr.push_back(ads_xi_ret);
                 ++combo_cnt;
@@ -188,17 +182,12 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 if (ads_xi_ret.ret == ERR_MASS_OUT_OF_RANGE)
                     continue;
 
-                if (ads_xi_ret.ret == ERR_NO_LAMBDA)
-                    continue;
-
                 if (ads_xi_ret.ret <= NULL_DATA)
                     continue;
 
                 hades_tracks[i].is_used = true;
                 hades_tracks[j].is_used = true;
                 fwdet_tracks[k].is_used = true;
-
-                mtd_list.push_back(ads_xi_ret.fMTD);
 
                 ads_arr.push_back(ads_xi_ret);
                 ++combo_cnt;
@@ -210,15 +199,12 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
             AnaDataSet ads_ret;
 
             // H-F
-            if (hades_tracks[i].pid[A_PID][KT::Charge])
+            if (hades_tracks[i].pid[A_PID][KT::Beta] and hades_tracks[i].pid[A_PID][KT::Charge])
             {
                 ads_ret = singleFwDetPairAnalysis(fEvent, event_num, A_PID, B_PID, pcand, vcand, i, j);
                 ads_ret.fIsFwDetData = 2;
 
                 if (ads_ret.ret == ERR_MASS_OUT_OF_RANGE)
-                    continue;
-
-                if (ads_ret.ret == ERR_NO_LAMBDA)
                     continue;
 
                 if (ads_ret.ret <= NULL_DATA)
@@ -229,15 +215,12 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
             }
             else
             // F-H
-            if (hades_tracks[i].pid[B_PID][KT::Charge])
+            if (hades_tracks[i].pid[B_PID][KT::Beta] and hades_tracks[i].pid[B_PID][KT::Charge])
             {
                 ads_ret = singleFwDetPairAnalysis(fEvent, event_num, B_PID, A_PID, pcand, vcand, i, j);
                 ads_ret.fIsFwDetData = 1;
 
                 if (ads_ret.ret == ERR_MASS_OUT_OF_RANGE)
-                    continue;
-
-                if (ads_ret.ret == ERR_NO_LAMBDA)
                     continue;
 
                 if (ads_ret.ret <= NULL_DATA)
@@ -257,7 +240,7 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 if (k == i)
                     continue;
 
-                if (!hades_tracks[k].pid[B_PID][KT::Charge])
+                if (!(hades_tracks[k].pid[B_PID][KT::Beta] and hades_tracks[k].pid[B_PID][KT::Charge]))
                     continue;
 
                 AnaDataSet ads_xi_ret = singlePairAnalysisXi(fEvent, event_num, ads_ret, B_PID, pcand, k);
@@ -266,15 +249,10 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 if (ads_xi_ret.ret == ERR_MASS_OUT_OF_RANGE)
                     continue;
 
-                if (ads_xi_ret.ret == ERR_NO_LAMBDA)
-                    continue;
-
                 if (ads_xi_ret.ret <= NULL_DATA)
                     continue;
 
                 hades_tracks[k].is_used = true;
-
-                mtd_list.push_back(ads_xi_ret.fMTD);
 
                 ads_arr.push_back(ads_xi_ret);
                 ++combo_cnt;
@@ -295,30 +273,14 @@ bool ef_xim_pp45::analysis(HEvent * fEvent, Int_t event_num, HCategory * pcand, 
                 if (ads_xi_ret.ret == ERR_MASS_OUT_OF_RANGE)
                     continue;
 
-                if (ads_xi_ret.ret == ERR_NO_LAMBDA)
-                    continue;
-
                 if (ads_xi_ret.ret <= NULL_DATA)
                     continue;
 
                 fwdet_tracks[k].is_used = true;
 
-                mtd_list.push_back(ads_xi_ret.fMTD);
-
                 ads_arr.push_back(ads_xi_ret);
                 ++combo_cnt;
             }
-        }
-    }
-
-    std::sort(mtd_list.begin(), mtd_list.end());
-
-    for (size_t i = 0; i < combo_cnt; ++i)
-    {
-        for (size_t j = 0; j < combo_cnt; ++j)
-        {
-            if (ads_arr[i].fMTD == mtd_list[j])
-                ads_arr[i].fSortOrderMtd = j;
         }
     }
 
@@ -395,11 +357,11 @@ AnaDataSet ef_xim_pp45::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*
 
     }
 
-    trackA.setMomentum(momentum_A_corr);
-    trackB.setMomentum(momentum_B_corr);
-
-    trackA.calc4vectorProperties(HPhysicsConstants::mass(pid_a));
-    trackB.calc4vectorProperties(HPhysicsConstants::mass(pid_b));
+//     trackA.setMomentum(momentum_A_corr);
+//     trackB.setMomentum(momentum_B_corr);
+// 
+//     trackA.calc4vectorProperties(HPhysicsConstants::mass(pid_a));
+//     trackB.calc4vectorProperties(HPhysicsConstants::mass(pid_b));
 
     ads.fMomAx = trackA.Px();
     ads.fMomAy = trackA.Py();
@@ -434,7 +396,7 @@ AnaDataSet ef_xim_pp45::singlePairAnalysis(HEvent * /*fEvent*/, int /*event_num*
         return ads;// * fMinTrackDist;
     }
 
-    ads.fMTD = ads.trec_lambda.getMTD();        // minimum distance between the two tracks
+    ads.fMTD_L = ads.trec_lambda.getMTD();        // minimum distance between the two tracks
 //     if (quick_run) printf(" mtd: %f\n", fMinTrackDist);
 
     float GeantxVertexA    = 0;
@@ -612,9 +574,7 @@ AnaDataSet ef_xim_pp45::singlePairAnalysisXi(HEvent* fEvent, Int_t event_num, co
     KTrackReconstructor trackA = ads_a.trec_lambda;
     HParticleCand trackB = *(HParticleCand*)o_b;
 
-    //trackA.calc4vectorProperties(HPhysicsConstants::mass(pid_a));
-    //trackA.calc4vectorProperties(LAMBDA_MASS);
-    // trackB.calc4vectorProperties(HPhysicsConstants::mass(pid_b));
+    trackB.calc4vectorProperties(HPhysicsConstants::mass(pid_b));
 
 	//float momentum_A_corr = 0;
     //float momentum_B_corr = 0;
@@ -656,6 +616,7 @@ AnaDataSet ef_xim_pp45::singlePairAnalysisXi(HEvent* fEvent, Int_t event_num, co
     // ads.tr_xim_a = trackA;
     // ads.tr_xim_b = trackB;
     ads.trec_xim.reconstruct(trackA, trackB);
+    ads.fMTD_Xi = ads.trec_xim.getMTD();
 
     // I do not need so many data!
     KCutInside<Float_t> xi_mass_test(XI_MASS - 100.0, XI_MASS + 100.0, KT::WEAK, KT::WEAK);
@@ -730,10 +691,10 @@ AnaDataSet ef_xim_pp45::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*eve
 
     }
 
-    trackA.setMomentum(momentum_A_corr);
+//     trackA.setMomentum(momentum_A_corr);
 //     trackB.setMomentum(momentum_B_corr);
 
-    trackA.calc4vectorProperties(HPhysicsConstants::mass(pid_a));
+//     trackA.calc4vectorProperties(HPhysicsConstants::mass(pid_a));
 //     trackB.calc4vectorProperties(HPhysicsConstants::mass(pid_b));
 
     ads.fMomAx = trackA.Px();
@@ -763,7 +724,7 @@ AnaDataSet ef_xim_pp45::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*eve
         return ads;// * fMinTrackDist;
     }
 
-    ads.fMTD = ads.trec_lambda.getMTD();        // minimum distance between the two tracks
+    ads.fMTD_L = ads.trec_lambda.getMTD();        // minimum distance between the two tracks
 
     float GeantxVertexA    = 0;
     float GeantyVertexA    = 0;
@@ -775,102 +736,7 @@ AnaDataSet ef_xim_pp45::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*eve
     // extra checks for the simulation analysis
     if (analysisType == KT::Sim)
     {
-//         TLorentzVector geaA; geaA.SetXYZM(trackA.getGeantxMom(), trackA.getGeantyMom(), trackA.getGeantzMom(), HPhysicsConstants::mass(A_PID));
-//         TLorentzVector geaB; geaB.SetXYZM(trackB.getGeantxMom(), trackB.getGeantyMom(), trackB.getGeantzMom(), HPhysicsConstants::mass(B_PID));
-//         TLorentzVector geaAB = geaA + geaB;
-//         ads.fGeaP = geaAB.P();
-//         ads.fGeaPx = geaAB.Px();
-//         ads.fGeaPy = geaAB.Py();
-//         ads.fGeaPz = geaAB.Pz();
-//         ads.fGeaTheta = geaAB.Theta() * R2D;
-//         ads.fGeaPhi = geaAB.Phi() * R2D;
-//         ads.fGeaAngleAB = geaA.Angle(geaB.Vect());
-// 
-//         TLorentzVector geaAB_cms = geaAB;
-//         geaAB_cms.Boost(-Vec_pp35_sum.BoostVector());
-//         ads.fGeaXf = fabs(geaAB_cms.Pz()/vec_beam_cms.Pz());
-// 
-//         // find plane normal
-//         TVector3 beam = Vec_pp35_beam.Vect();
-//         TVector3 lambda = geaAB.Vect();
-// 
-//         TVector3 n_x = beam.Cross(lambda);
-//         n_x *= (1.0/n_x.Mag());
-// 
-//         TVector3 n_z = lambda;
-//         n_z *= (1.0/n_z.Mag());
-// 
-//         TVector3 n_y = n_z.Cross(n_x);
-// 
-//         // lambda boost
-//         TLorentzVector l_lambda = geaAB;
-// 
-//         // proton -boost
-//         TVector3 beta_vec = l_lambda.BoostVector();
-//         TLorentzVector l_proton = geaA;
-//         l_proton.Boost(-beta_vec);
-// 
-//         TVector3 p_proton = l_proton.Vect();
-//         ads.fGeaPolX = p_proton.Dot(n_x) / (p_proton.Mag() * n_x.Mag());
-//         ads.fGeaPolY = p_proton.Dot(n_y) / (p_proton.Mag() * n_y.Mag());
-//         ads.fGeaPolZ = p_proton.Dot(n_z) / (p_proton.Mag() * n_z.Mag());
-//         ads.fGeaZetaX = TMath::ACos(ads.fGeaPolX) * R2D;
-//         ads.fGeaZetaY = TMath::ACos(ads.fGeaPolY) * R2D;
-//         ads.fGeaZetaZ = TMath::ACos(ads.fGeaPolZ) * R2D;
-// 
-//         GeantxVertexA    = trackA.getGeantxVertex();
-//         GeantyVertexA    = trackA.getGeantyVertex();
-//         GeantzVertexA    = trackA.getGeantzVertex();
-//         GeantxVertexB    = trackB.getGeantxVertex();
-//         GeantyVertexB    = trackB.getGeantyVertex();
-//         GeantzVertexB    = trackB.getGeantzVertex();
-// 
-//         int GeantPIDA = trackA.getGeantPID();
-//         int GeantPIDB = trackB.getGeantPID();
-// 
-//         int GeantPIDAparent = trackA.getGeantParentPID();
-//         int GeantPIDBparent = trackB.getGeantParentPID();
-// 
-//         int GeantPIDAGparent = trackA.getGeantGrandParentPID();
-//         int GeantPIDBGparent = trackB.getGeantGrandParentPID();
-// 
-//         // the simulated vertex of particleA and particleB has to be the same
-//         ads.fRealLambda = ( (GeantPIDA == 14 and GeantPIDAparent == 18 and GeantPIDB == 9 and GeantPIDBparent == 18) or (GeantPIDA == 14 and GeantPIDAparent == 18 and GeantPIDB == 6 and GeantPIDBparent == 9 and GeantPIDBGparent == 18));
-//
-// //         if (ads.fRealLambda)
-// //         {
-// //             printf("*************** TRACK A ***************\n");
-// //             trackA.print(1<<4 | 1<<2);
-// //             printf("*************** TRACK B ***************\n");
-// //             trackB.print(1<<4 | 1<<2);
-// //         }
-// 
-// //         ads.fGeantInfoNum = event->getGeantInfoNum(); FIXME
-// 
-//         // FIXME
-// //         if (!wasLambda or (flag_nosigmas and wasSigma))
-// //         {
-// // #ifdef SHOWREJECTED
-// //             ads.fRejected = ERR_NO_LAMBDA;
-// // #else
-// //             ads.ret = ERR_NO_LAMBDA;
-// // //            return ads;
-// // #endif /*SHOWREJECTED*/
-// //         }
     }
-
-//     if (quick_run) printf(" : %f, : %f\n", trackA.P(), trackB.P());
-
-//             float thetaA = trackA.getTheta();
-//             float thetaB = trackB.getTheta();
-
-//             if (fMomA > 0.0 and fMomB > 0.0)
-//             {
-//                 float momAscale = momentum_A_corr / fMomA;
-//                 float momBscale = momentum_B_corr / fMomB;
-//                 trackA.SetXYZM(trackA.Px()*momAscale, trackA.Py()*momAscale, trackA.Pz() * momAscale, trackA.M());
-//                 trackB.SetXYZM(trackB.Px()*momBscale, trackB.Py()*momBscale, trackB.Pz() * momBscale, trackB.M());
-//             }
 
     ads.fChiA = trackA.getChi2();
     ads.fChiB = trackB.getChi2();
@@ -1055,48 +921,11 @@ AnaDataSet ef_xim_pp45::singleFwDetPairAnalysis(HEvent * /*fEvent*/, Int_t /*eve
     {
     if (analysisType == KT::Sim)     //for simulated data
     {
-//                 if( !(
-//                      fMinTrackDist < par_Mtd/*kMTD*/
-//                      && VerDistA > par_VertDistA/*kVDAB*/
-//                      && VerDistB > par_VertDistB/*kVDAB*/
-//                      && VerDistX > par_VertDistX/*kVDX*/
-//                      &&
-//                      GeantxVertexA == GeantxVertexB      // the simulated vertex of particleA and particleB has to be the same
-//                      && GeantyVertexA == GeantyVertexB
-//                      && GeantzVertexA == GeantzVertexB
-//                     fRealLambda
-//                           )
-//                   )
-//                 {
-//                     continue;
-//                 }
     }
     else       //for experimental data
     {
-//                 if ( !(
-//                     fMinTrackDist < par_Mtd/*kMTD*/
-//                      && VerDistA > par_VertDistA/*kVDAB*/
-//                      && VerDistB > par_VertDistB/*kVDAB*/
-//                      && VerDistX > par_VertDistX/*kVDX*/
-//                          )
-//                       )
-//                 {
-//                     continue;
-//                 }
     }
     }
-
-//     if (analysisType == KT::Sim)     //for simulated data
-//     {
-//         if( !(GeantxVertexA == GeantxVertexB      // the simulated vertex of particleA and particleB has to be the same
-//             && GeantyVertexA == GeantyVertexB
-//             && GeantzVertexA == GeantzVertexB
-//                 )
-//             )
-//         {
-//             return ERR_SIM_VERTEX_MISSMATCH;
-//         }
-//     }
 
     ++ads.fEventLCounter;
 
@@ -1156,13 +985,11 @@ AnaDataSet ef_xim_pp45::singleFwDetPairAnalysisXi(HEvent* fEvent, Int_t event_nu
 
     HGeomVector dirMother, PrimVertexMother;
 
-    //HParticleCandSim trackA = *(HParticleCandSim*)pcand->getObject(trackA_num);
     KTrackReconstructor trackA = ads_a.trec_lambda;
     HFwDetCand trackB = *(HFwDetCand*)vcand->getObject(trackB_num);
 
-    /* trackA.calc4vectorProperties(HPhysicsConstants::mass(pid_a));
     trackB.calc4vectorProperties(HPhysicsConstants::mass(pid_b));
-
+/*
     float momentum_A_corr = 0;
 //     float momentum_B_corr = 0;
 
@@ -1200,6 +1027,7 @@ AnaDataSet ef_xim_pp45::singleFwDetPairAnalysisXi(HEvent* fEvent, Int_t event_nu
     ads.fMomBz = trackB.Pz();
     */
     ads.trec_xim.reconstruct(trackA, trackB);
+    ads.fMTD_Xi = ads.trec_xim.getMTD();
 
     // I do not need so many data!
     KCutInside<Float_t> xi_mass_test(XI_MASS - 100.0, XI_MASS + 100.0, KT::WEAK, KT::WEAK);
@@ -1237,7 +1065,8 @@ void ef_xim_pp45::configureTree(TTree * tree)
     tree->Branch("fXf",             &g_ads.fXf,             "fXf/F");
     tree->Branch("fXfi",            &g_ads.fXfi,            "fXfi/F");
 
-    tree->Branch("fMinTrackDist",   &g_ads.fMTD,            "fMinTrackDist/F" );
+    tree->Branch("fMinTrackDistL",  &g_ads.fMTD_L,          "fMinTrackDistL/F" );
+    tree->Branch("fMinTrackDistXi", &g_ads.fMTD_Xi,         "fMinTrackDistXi/F" );
     tree->Branch("fVertDistX",      &g_ads.fVertDistX,      "fVertDistX/F");
     tree->Branch("fPVA",            &g_ads.fPVA,            "fPVA/F");
     tree->Branch("fPVA_miss",       &g_ads.fPVA_miss,       "fPVA_miss/F");

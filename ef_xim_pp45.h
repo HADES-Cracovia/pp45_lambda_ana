@@ -35,7 +35,6 @@ static const Float_t NULL_DATA = -10000.;
 static const Float_t MASS_OK = 10000.;
 static const Float_t ERR_NOT_IN_VERTEX = -10001.;
 static const Float_t ERR_MASS_OUT_OF_RANGE = -10002.;
-static const Float_t ERR_NO_LAMBDA = -10003.;
 static const Float_t ERR_VERTEX_Z_MISSMATCH = -10004.;
 static const Float_t ERR_SIM_VERTEX_MISSMATCH = -10005.;
 
@@ -48,7 +47,8 @@ struct AnaDataSet
     Float_t fMt;
 
     // track-reco properties
-    Float_t fMTD;
+    Float_t fMTD_L;
+    Float_t fMTD_Xi;
     Float_t fVertDistX;
     Float_t fPVA;
     Float_t fPVA_miss;
@@ -159,7 +159,8 @@ struct AnaDataSet
         fXf = NULL_DATA;
         fXfi = NULL_DATA;
 
-        fMTD = NULL_DATA;
+        fMTD_L = NULL_DATA;
+        fMTD_Xi = NULL_DATA;
         fVertDistX = NULL_DATA;
         fPVA = NULL_DATA;
         fPVA_miss = NULL_DATA;
